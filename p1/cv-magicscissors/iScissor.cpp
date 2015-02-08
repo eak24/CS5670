@@ -7,6 +7,8 @@
 #include <stdio.h>      /* printf, scanf, NULL */
 #include "correlation.h"
 #include "iScissor.h"
+#include <queue>
+using namespace std;  // This is to make available the names of things defined in the standard library.
 
 
 const double linkLengths[8] = { 1.0, SQRT2, 1.0, SQRT2, 1.0, SQRT2, 1.0, SQRT2 };
@@ -48,6 +50,11 @@ void InitNodeBuf(Node* nodes, const unsigned char* img, int imgWidth, int imgHei
                     pixel_filter(pixel, x, y,img, imgWidth, imgHeight,
                     kernels[k], 3,3,1,0);
                     nodes[y*imgWidth+x].linkCost[k]=sqrt(pixel[0]*pixel[0]+pixel[1]*pixel[1]+pixel[2]*pixel[2]);
+                    nodes[y*imgWidth+x].state=INITIAL;
+                    nodes[y*imgWidth+x].row=y;
+                    nodes[y*imgWidth+x].column=x;
+
+
                 }
         }
 
@@ -61,6 +68,16 @@ static int offsetToLinkIndex(int dx, int dy)
     assert(tmp_idx >= 0 && tmp_idx < 9 && tmp_idx != 4);
     return indices[tmp_idx];
 }
+
+
+class CompareNode {
+    public:
+    bool operator()(Node * n1, Node * n2) // Returns true if n2 is earlier than t2
+    {
+       if (n1->totalCost < n2->totalCost) return true;
+       return false;
+    }
+};
 
 /************************ TODO 4 ***************************
  *LiveWireDP:
@@ -79,7 +96,44 @@ static int offsetToLinkIndex(int dx, int dy)
 
 void LiveWireDP(int seedX, int seedY, Node* nodes, int width, int height, const unsigned char* selection, int numExpanded)
 {
-printf("TODO: %s:%d\n", __FILE__, __LINE__); 
+    printf("(LiveWireDP)\n");
+    Node * q,*r;
+    int dir,offsetX,offsetY; 
+    double i=0;
+    priority_queue<Node *, vector<Node *>, CompareNode> pq;
+
+    nodes[seedX+width*seedY].totalCost=0.0;
+    pq.push(&nodes[seedX+width*seedY]);
+
+    while (!pq.empty()){
+        q = pq.top();
+        pq.pop();
+        i+=1;
+        printf("(Work) %f\n",(100*i)/(width*height) );
+        q->state = EXPANDED;
+        for (dir=0;dir<8;dir++){
+            q->nbrNodeOffset(offsetX,offsetY,dir);
+            offsetX+=q->column; offsetY+=q->row;
+
+            if (!(offsetX<0||offsetX>=width||offsetY<0||offsetY>=height)){
+                r=&(nodes[offsetY*width+offsetX]);
+                if (r->state==INITIAL){
+                    r->totalCost = q->totalCost+q->linkCost[dir];
+                    r->state  =ACTIVE;
+                    r->prevNode = q;
+                    pq.push(r);
+
+                }
+                if(r->state==ACTIVE){
+                    if (r->totalCost>(q->totalCost+q->linkCost[dir])){
+                            r->prevNode = q; 
+                            r->totalCost=(q->totalCost+q->linkCost[dir]);
+                    }
+                }
+            }
+        }
+    }
+        printf("(LiveWireDPdone)\n");
 
 }
 /************************ END OF TODO 4 ***************************/
