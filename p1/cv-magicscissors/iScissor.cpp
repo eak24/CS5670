@@ -3,7 +3,8 @@
  * (see also correlation.cpp and iScissor.h for additional TODOs) */
 
 #include <assert.h>
-
+#include <stdlib.h>     /* calloc, exit, free */
+#include <stdio.h>      /* printf, scanf, NULL */
 #include "correlation.h"
 #include "iScissor.h"
 
@@ -37,8 +38,28 @@ kernels vector to fill the links[] array in each of the Nodes[].
 */
 void InitNodeBuf(Node* nodes, const unsigned char* img, int imgWidth, int imgHeight)
 {
+    double * cost = (double *) calloc(imgHeight*imgWidth,sizeof(double));
+    double * sum_of_square =  (double *) calloc(imgHeight*imgWidth,sizeof(double));
+    int k,c,i; 
+    for(k=0; k<8; k++){
+            printf("Working on kernel %d \n",k);
+            for (c=0;c<3;c++){
+                printf("Working on color %d \n",c);
+                image_filter( cost, img, NULL /*selection*/,
+                       imgWidth,  imgHeight,
+                      kernels[k], 3, 3,
+                      1.0, 0.0);
+                for (i=0; i<imgWidth*imgHeight;i++)
+                    sum_of_square[i]+=cost[i]*cost[i];
+            }
+            for (i=0; i<imgWidth*imgHeight;i++){
+                nodes[i].linkCost[k]=sqrt(sum_of_square[i]);
+                sum_of_square[i]=0;
+            }
 
-printf("TODO: %s:%d\n", __FILE__, __LINE__); 
+        }
+    free(cost);
+    free(sum_of_square);
 
 }
 /************************ END OF TODO 1 ***************************/

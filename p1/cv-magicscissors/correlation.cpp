@@ -42,7 +42,8 @@ void image_filter(double* rsltImg, const unsigned char* origImg, const unsigned 
     for (i=0;i<imgHeight;i++) //row
     	for(j=0;j<imgWidth;i++) //col
     	{
-    		if (selection && selection[p]){ //only work on pixels for which selection[pixel]=1
+    		if (!selection|| selection[p]){ //only work on pixels for which selection[pixel]=1
+                printf("Calling pixel_filter\n");
     			pixel_filter(&rsltImg[3*p],
     				j,
     				i,
