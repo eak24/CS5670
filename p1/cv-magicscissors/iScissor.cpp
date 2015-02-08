@@ -38,28 +38,18 @@ kernels vector to fill the links[] array in each of the Nodes[].
 */
 void InitNodeBuf(Node* nodes, const unsigned char* img, int imgWidth, int imgHeight)
 {
-    double * cost = (double *) calloc(imgHeight*imgWidth,sizeof(double));
-    double * sum_of_square =  (double *) calloc(imgHeight*imgWidth,sizeof(double));
-    int k,c,i; 
+    //double * cost = (double *) calloc(imgHeight*imgWidth*3,sizeof(double));
+    double pixel[3]; //
+    int k,c,x,y; 
     for(k=0; k<8; k++){
             printf("Working on kernel %d \n",k);
-            for (c=0;c<3;c++){
-                printf("Working on color %d \n",c);
-                image_filter( cost, img, NULL /*selection*/,
-                       imgWidth,  imgHeight,
-                      kernels[k], 3, 3,
-                      1.0, 0.0);
-                for (i=0; i<imgWidth*imgHeight;i++)
-                    sum_of_square[i]+=cost[i]*cost[i];
-            }
-            for (i=0; i<imgWidth*imgHeight;i++){
-                nodes[i].linkCost[k]=sqrt(sum_of_square[i]);
-                sum_of_square[i]=0;
-            }
-
+            for (x=0;x<imgWidth;x++)
+                for(y=0;y<imgHeight;y++){
+                    pixel_filter(pixel, x, y,img, imgWidth, imgHeight,
+                    kernels[k], 3,3,1,0);
+                    nodes[y*imgWidth+x].linkCost[k]=sqrt(pixel[0]*pixel[0]+pixel[1]*pixel[1]+pixel[2]*pixel[2]);
+                }
         }
-    free(cost);
-    free(sum_of_square);
 
 }
 /************************ END OF TODO 1 ***************************/
