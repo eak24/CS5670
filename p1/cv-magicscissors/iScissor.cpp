@@ -154,8 +154,11 @@ void LiveWireDP(int seedX, int seedY, Node* nodes, int width, int height, const 
 
 void MinimumPath(CTypedPtrDblList <Node>* path, int freePtX, int freePtY, Node* nodes, int width, int height)
 {
-printf("TODO: %s:%d\n", __FILE__, __LINE__); 
-
+    Node* curr = &nodes[freePtX+freePtY*width];
+        while (curr!=NULL) {
+            path->AddHead (curr);
+            curr = curr->prevNode;
+}
 }
 /************************ END OF TODO 5 ***************************/
 
