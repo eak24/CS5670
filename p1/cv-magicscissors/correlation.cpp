@@ -100,12 +100,12 @@ void pixel_filter(double rsltPixel[3], int x, int y, const unsigned char* origIm
 	//Clear the pixels, just in case;
 
 	for (i=0;i<knlHeight;i++)
-		for(j=knlWidth;j<knlWidth;j++){
+		for(j=0;j<knlWidth;j++){
 			imx = ABS((knlWidth/2)-j+x); imy=ABS((knlHeight/2) - i+ y); //If we go negative, reflect around 0.
-			if (imx>imgWidth)
+			if (imx>=imgWidth)
 				imx = imgWidth - (imx-imgWidth);
 				//If we go past the width, reflect around
-			if (imy>imgHeight)
+			if (imy>=imgHeight)
 				imy = imgHeight - (imy-imgHeight);
 				//If we go past the height, reflefct around
 			kw = kernel[i*knlWidth+j]; //The lcoation in the kernel
