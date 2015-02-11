@@ -42,22 +42,26 @@ void InitNodeBuf(Node* nodes, const unsigned char* img, int imgWidth, int imgHei
 {
     //double * cost = (double *) calloc(imgHeight*imgWidth*3,sizeof(double));
     double pixel[3]; //
+    double maxD=0.0;
+    double LENGTHS[2] = {1,SQRT2}; 
     int k,c,x,y; 
-    for(k=0; k<8; k++){
-            printf("Working on kernel %d \n",k);
-            for (x=0;x<imgWidth;x++)
-                for(y=0;y<imgHeight;y++){
-                    pixel_filter(pixel, x, y,img, imgWidth, imgHeight,
+    for (x=0;x<imgWidth;x++)
+        for(y=0;y<imgHeight;y++)
+            for(k=0; k<8; k++){
+                pixel_filter(pixel, x, y,img, imgWidth, imgHeight,
                     kernels[k], 3,3,1,0);
-                    nodes[y*imgWidth+x].linkCost[k]=sqrt(pixel[0]*pixel[0]+pixel[1]*pixel[1]+pixel[2]*pixel[2]);
-                    nodes[y*imgWidth+x].state=INITIAL;
-                    nodes[y*imgWidth+x].row=y;
-                    nodes[y*imgWidth+x].column=x;
-
-
-                }
-        }
-
+                nodes[y*imgWidth+x].linkCost[k]=sqrt(pixel[0]*pixel[0]+pixel[1]*pixel[1]+pixel[2]*pixel[2]);
+                nodes[y*imgWidth+x].state=INITIAL;
+                nodes[y*imgWidth+x].row=y;
+                nodes[y*imgWidth+x].column=x;
+                maxD = max(maxD,nodes[y*imgWidth+x].linkCost[k]);
+    }
+        
+    for (x=0;x<imgWidth;x++)
+                for(y=0;y<imgHeight;y++)
+                    for(k=0;k<8;k++)
+                        nodes[y*imgWidth+x].linkCost[k] = (maxD - nodes[y*imgWidth+x].linkCost[k])/LENGTHS[k & 1];
+                    
 }
 /************************ END OF TODO 1 ***************************/
 
@@ -74,7 +78,7 @@ class CompareNode {
     public:
     bool operator()(Node * n1, Node * n2) // Returns true if n2 is earlier than t2
     {
-       if (n1->totalCost < n2->totalCost) return true;
+       if (n1->totalCost > n2->totalCost) return true;
        return false;
     }
 };
@@ -101,15 +105,18 @@ void LiveWireDP(int seedX, int seedY, Node* nodes, int width, int height, const 
     int dir,offsetX,offsetY; 
     double i=0;
     priority_queue<Node *, vector<Node *>, CompareNode> pq;
-
+    for (dir=0;dir<(height*width);dir++){
+        nodes[dir].state=INITIAL;
+    }
     nodes[seedX+width*seedY].totalCost=0.0;
     pq.push(&nodes[seedX+width*seedY]);
 
     while (!pq.empty()){
         q = pq.top();
+        printf("this totalcost is %f\n",q->totalCost);
         pq.pop();
         i+=1;
-        printf("(Work) %f\n",(100*i)/(width*height) );
+        //printf("(Work) %f\n",(100*i)/(width*height) );
         q->state = EXPANDED;
         for (dir=0;dir<8;dir++){
             q->nbrNodeOffset(offsetX,offsetY,dir);

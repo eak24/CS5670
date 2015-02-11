@@ -102,7 +102,7 @@ void pixel_filter(double rsltPixel[3], int x, int y, const unsigned char* origIm
 
 	for (i=0;i<knlHeight;i++)
 		for(j=0;j<knlWidth;j++){
-			imx = ABS((knlWidth/2)-j+x); imy=ABS((knlHeight/2) - i+ y); //If we go negative, reflect around 0.
+			imx = ABS(-(knlWidth/2)+j+x); imy=ABS(-(knlHeight/2) + i+ y); //If we go negative, reflect around 0.
 			if (imx>=imgWidth)
 				imx = imgWidth - (imx-imgWidth);
 				//If we go past the width, reflect around
