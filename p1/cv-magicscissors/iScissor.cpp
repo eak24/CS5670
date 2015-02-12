@@ -107,6 +107,8 @@ void LiveWireDP(int seedX, int seedY, Node* nodes, int width, int height, const 
     priority_queue<Node *, vector<Node *>, CompareNode> pq;
     for (dir=0;dir<(height*width);dir++){
         nodes[dir].state=INITIAL;
+        nodes[dir].totalCost=0;
+        nodes[dir].prevNode=NULL;
     }
     nodes[seedX+width*seedY].totalCost=0.0;
     pq.push(&nodes[seedX+width*seedY]);
