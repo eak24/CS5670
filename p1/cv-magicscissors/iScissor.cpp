@@ -104,13 +104,14 @@ void LiveWireDP(int seedX, int seedY, Node* nodes, int width, int height,
 {
     printf("(LiveWireDP)\n");
     Node *q,*r;
+    nodes[seedY*width+seedX].prevNode=NULL;
     int dir,offsetX,offsetY; 
     //double i=0;
     //initialize priority queue pq to be empty and set each node to INITIAL state
     for (dir=0;dir<(height*width);dir++){
         nodes[dir].state=INITIAL;
-        nodes[dir].totalCost=0;
-        nodes[dir].prevNode=NULL;
+       // nodes[dir].totalCost=0;
+        //nodes[dir].prevNode=NULL;
     }
     priority_queue<Node*, vector<Node*>, CompareNode> pq;
     
