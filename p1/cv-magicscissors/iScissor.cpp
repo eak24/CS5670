@@ -73,10 +73,11 @@ static int offsetToLinkIndex(int dx, int dy)
     return indices[tmp_idx];
 }
 
-
+//Compare function for the priority queue. Requires ordered 2 nodes. Returns 
+//true if n1 total cost is greater than n2's total cost.
 class CompareNode {
     public:
-    bool operator()(Node * n1, Node * n2) // Returns true if n2 is earlier than t2
+    bool operator()(Node * n1, Node * n2) 
     {
        if (n1->totalCost > n2->totalCost) return true;
        return false;
@@ -98,39 +99,52 @@ class CompareNode {
  *		cost path from the seed to that node.
  */
 
-void LiveWireDP(int seedX, int seedY, Node* nodes, int width, int height, const unsigned char* selection, int numExpanded)
+void LiveWireDP(int seedX, int seedY, Node* nodes, int width, int height, 
+    const unsigned char* selection, int numExpanded)
 {
     printf("(LiveWireDP)\n");
-    Node * q,*r;
+    Node *q,*r;
     int dir,offsetX,offsetY; 
-    double i=0;
-    priority_queue<Node *, vector<Node *>, CompareNode> pq;
+    //double i=0;
+    //initialize priority queue pq to be empty and set each node to INITIAL state
     for (dir=0;dir<(height*width);dir++){
         nodes[dir].state=INITIAL;
     }
+    priority_queue<Node*, vector<Node*>, CompareNode> pq;
+    
+    //set seed total cost to 0 and insert seed into queue
     nodes[seedX+width*seedY].totalCost=0.0;
     pq.push(&nodes[seedX+width*seedY]);
 
     while (!pq.empty()){
         q = pq.top();
-        printf("this totalcost is %f\n",q->totalCost);
+        //printf("this totalcost is %f\n",q->totalCost);
         pq.pop();
-        i+=1;
+        //i+=1;
         //printf("(Work) %f\n",(100*i)/(width*height) );
         q->state = EXPANDED;
+
+        //for each valid neighbor, r of node q
         for (dir=0;dir<8;dir++){
             q->nbrNodeOffset(offsetX,offsetY,dir);
             offsetX+=q->column; offsetY+=q->row;
 
+            //set r as neighbor node if r is still in image
             if (!(offsetX<0||offsetX>=width||offsetY<0||offsetY>=height)){
                 r=&(nodes[offsetY*width+offsetX]);
+
+            //if r is INITIAL, insert r to pq and set r's total cost to the sum of
+            // the total cost of q and the link cost from q to r... mark r as 
+            //active and insert into pq
                 if (r->state==INITIAL){
                     r->totalCost = q->totalCost+q->linkCost[dir];
                     r->state  =ACTIVE;
                     r->prevNode = q;
                     pq.push(r);
-
                 }
+
+                //if r is active then test for less expensive path and update if 
+                //one exists using the link from q to r
                 if(r->state==ACTIVE){
                     if (r->totalCost>(q->totalCost+q->linkCost[dir])){
                             r->prevNode = q; 
@@ -161,11 +175,12 @@ void LiveWireDP(int seedX, int seedY, Node* nodes, int width, int height, const 
 
 void MinimumPath(CTypedPtrDblList <Node>* path, int freePtX, int freePtY, Node* nodes, int width, int height)
 {
-    Node* curr = &nodes[freePtX+freePtY*width];
+    Node* curr = &(nodes[freePtX+freePtY*width]);
+
         while (curr!=NULL) {
             path->AddHead (curr);
             curr = curr->prevNode;
-}
+        }
 }
 /************************ END OF TODO 5 ***************************/
 
