@@ -483,19 +483,31 @@ class SSDFeatureMatcher(FeatureMatcher):
         #TODO-BLOCK-BEGIN
         #if desc1.shape[0]>desc2.shape[0]: #I want desc1 to always have the least elements
         #    return self.matchFeatures(desc2,desc1)
-        d_matrix = spatial.distance.cdist(desc1,desc2)
+        if not USE_KD:
+            d_matrix = spatial.distance.cdist(desc1,desc2)
+        else:
+            kdt = spatial.KDTree(desc2)
         #print d_matrix # d_matrix[i][j]=distnace between f1 and f
 
         matches=[]
+        if not USE_KD:
+            bests = d_matrix.argmin(axis=1)
+        else:
+            distances,bests = kdt.query(desc1)
         for hubby in xrange(desc1.shape[0]):
-            best = int(d_matrix[hubby].argmin())
+            if not USE_KD:
+                best = bests[i]
+                dist = d_matrix[hubby,best] 
+            else:
+                best = bests[i]
+                dist = distances[i]
             #np.save('d_matrix',d_matrix)
             #print hubby, best, type(hubby),type(best)
             if not switched:
                 matches.append(cv2.DMatch(
                 _queryIdx= best,
                 _trainIdx = hubby,
-                _distance = d_matrix[hubby,best] 
+                _distance = dist
                 ))
             else:
                 matches.append(cv2.DMatch(
