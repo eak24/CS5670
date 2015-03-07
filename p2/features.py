@@ -425,7 +425,7 @@ class SSDFeatureMatcher(FeatureMatcher):
         #if desc1.shape[0]>desc2.shape[0]: #I want desc1 to always have the least elements
         #    return self.matchFeatures(desc2,desc1)
         d_matrix = spatial.distance.cdist(desc1,desc2) # d_matrix[i][j]=distnace between f1 and f2
-        husbands_married = np.zeros(desc1.shape[0],dtype=np.bool) #There is no husband that has a wife
+    '''    husbands_married = np.zeros(desc1.shape[0],dtype=np.bool) #There is no husband that has a wife
         wives_married_to = np.ones(desc2.shape[0],dtype='int')*-1 #Each wife is unwed, the index is the husband shes wed to
         while not husbands_married.min(): #There is an unmariedd man
             for husband in xrange(desc1.shape[0]): #consider every husband
@@ -440,22 +440,22 @@ class SSDFeatureMatcher(FeatureMatcher):
                             husbands_married[wives_married_to[wife]]=False
                             wives_married_to[wife]=husband
                             husbands_married[husband]=True
-                            break
+                            break'''
         matches=[]
-        for wife in xrange(desc2.shape[0]):
-            if wives_married_to[wife]>-1:
-                if not switched:
-                    matches.append(cv2.DMatch(
-                    queryIdx= wives_married_to[wife],
-                    trainIdx = wife,
-                    distance = d_matrix[wives_married_to[wife]][wife] 
-                    ))
-                else:
-                    matches.append(cv2.DMatch(
-                    trainIdx= wives_married_to[wife],
-                    queryIdx = wife,
-                    distance = d_matrix[wives_married_to[wife]][wife] 
-                    ))
+        for hubby in xrange(desc1.shape[0]):
+            best = d_matrix[hubby].argmin()
+            if not switched:
+                matches.append(cv2.DMatch(
+                queryIdx= hubby,
+                trainIdx = best,
+                distance = d_matrix[hubby][best] 
+                ))
+            else:
+                matches.append(cv2.DMatch(
+                trainIdx= best,
+                queryIdx = hubby,
+                distance = d_matrix[hubby][best]
+                ))
 
         return matches
 
