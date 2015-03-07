@@ -260,8 +260,9 @@ class SimpleFeatureDescriptor(FeatureDescriptor):
         '''
         image = image.astype(np.float32)
         image /= 255.
-        height,width = image.scale
-        image = np.vstack([image[1].reshape(1,width) ,
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        height,width = image.shape
+        image=np.vstack([image[1].reshape(1,width) ,
             image[0].reshape(1,width),
             image,
             image[-1].reshape(1,width),
@@ -273,14 +274,13 @@ class SimpleFeatureDescriptor(FeatureDescriptor):
             image[:,-1].reshape(height+4,1) ,
             image[:,-2].reshape(height+4,1)])
 
-        grayImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         desc = np.zeros((len(keypoints), 5 * 5))
 
         for i, f in enumerate(keypoints):
             x, y = f.pt
             x+=2
             y+=2
-            desc[i]=image[y-2:y+2,x-2:x+2].flatten()
+            desc[i]=image[y-2:y+3,x-2:x+3].flatten()
             # TODO 4:
             # The descriptor is a 5x5 window of intensities sampled centered on
             # the feature point.
@@ -476,7 +476,7 @@ class SSDFeatureMatcher(FeatureMatcher):
         #if desc1.shape[0]>desc2.shape[0]: #I want desc1 to always have the least elements
         #    return self.matchFeatures(desc2,desc1)
         d_matrix = spatial.distance.cdist(desc1,desc2)
-        print d_matrix # d_matrix[i][j]=distnace between f1 and f
+        #print d_matrix # d_matrix[i][j]=distnace between f1 and f
 
         matches=[]
         for hubby in xrange(desc1.shape[0]):
@@ -545,7 +545,7 @@ class RatioFeatureMatcher(FeatureMatcher):
         #if desc1.shape[0]>desc2.shape[0]: #I want desc1 to always have the least elements
         #    return self.matchFeatures(desc2,desc1)
         d_matrix = spatial.distance.cdist(desc1,desc2)
-        print d_matrix # d_matrix[i][j]=distnace between f1 and f
+        #print d_matrix # d_matrix[i][j]=distnace between f1 and f
 
         matches=[]
         for hubby in xrange(desc1.shape[0]):
