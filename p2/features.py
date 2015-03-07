@@ -403,11 +403,18 @@ class SSDFeatureMatcher(FeatureMatcher):
         # the two features should have the type
         assert desc1.shape[1] == desc2.shape[1]
 
-        #TSEARS
-        assert desc1.shape[0] == desc2.shape[0]
 
         if desc1.shape[0] == 0 or desc2.shape[0] == 0:
             return []
+
+        switched = False
+        if desc1.shape[0]>desc2.shape[0]:
+            switched=True
+            x=desc1.copy()
+            desc1=desc2.copy()
+            desc2 = x
+            del x
+
 
         # TODO 7: Perform simple feature matching.  This just uses the SSD
         # distance between two feature vectors, and matches a feature in the
@@ -437,9 +444,16 @@ class SSDFeatureMatcher(FeatureMatcher):
         matches=[]
         for wife in xrange(desc2.shape[0]):
             if wives_married_to[wife]>-1:
-                matches.append(cv2.DMatch(
+                if not switched:
+                    matches.append(cv2.DMatch(
                     queryIdx= wives_married_to[wife],
                     trainIdx = wife,
+                    distance = d_matrix[wives_married_to[wife]][wife] 
+                    ))
+                else:
+                    matches.append(cv2.DMatch(
+                    trainIdx= wives_married_to[wife],
+                    queryIdx = wife,
                     distance = d_matrix[wives_married_to[wife]][wife] 
                     ))
 
