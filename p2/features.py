@@ -7,6 +7,7 @@ from scipy import ndimage, spatial
 
 import transformations
 
+USE_KD = True
 
 def inbounds(shape, indices):
     assert len(shape) == len(indices)
@@ -496,11 +497,11 @@ class SSDFeatureMatcher(FeatureMatcher):
             distances,bests = kdt.query(desc1)
         for hubby in xrange(desc1.shape[0]):
             if not USE_KD:
-                best = bests[i]
+                best = bests[hubby]
                 dist = d_matrix[hubby,best] 
             else:
-                best = bests[i]
-                dist = distances[i]
+                best = bests[hubby]
+                dist = distances[hubby]
             #np.save('d_matrix',d_matrix)
             #print hubby, best, type(hubby),type(best)
             if not switched:
@@ -513,7 +514,7 @@ class SSDFeatureMatcher(FeatureMatcher):
                 matches.append(cv2.DMatch(
                 _trainIdx= hubby,
                 _queryIdx = best,
-                _distance = d_matrix[hubby,best]
+                _distance = dist
                 ))
 
         return matches
