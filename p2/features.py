@@ -308,9 +308,15 @@ class MOPSFeatureDescriptor(FeatureDescriptor):
             transMx = np.zeros((2, 3))
 
             #TODO-BLOCK-BEGIN
-            import inspect
-            frameinfo = inspect.getframeinfo(inspect.currentframe())
-            print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
+            
+            # Find the matrix by which to translate then rotate the image so that 
+            # the max derivative is pointing alog the 1,0 vector and the feature 
+            # is at the origin. Note that x and y are switched.
+            rotateMatrix = [[np.sin(f.angle), np.cos(f.angle),0], 
+                [np.cos(f.angle),-np.sin(f.angle),0]]
+            translateMatrix = [[0,1,f.pt[1]],[1,0,f.pt[0]]]
+            transMx = np.dot(rotateMatrix,translateMatrix)
+
             #TODO-BLOCK-END
 
             # Call the warp affine function to do the mapping
@@ -320,9 +326,11 @@ class MOPSFeatureDescriptor(FeatureDescriptor):
 
             # TODO 6: fill in the feature descriptor desc for a MOPS descriptor
             #TODO-BLOCK-BEGIN
-            import inspect
-            frameinfo = inspect.getframeinfo(inspect.currentframe())
-            print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
+            
+            # Normalize the descriptor intensities by computing the following for each 
+            # pixel: (intensity-mean(destImage))/StD(destImage)
+            desc[i] = (destImage-destImage.std())/destImage.mean()
+
             #TODO-BLOCK-END
 
         return desc
