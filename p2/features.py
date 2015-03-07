@@ -578,7 +578,8 @@ class RatioFeatureMatcher(FeatureMatcher):
                 best,secondbest = d_matrix[hubby].argpartition(2)[:2] #find the top two 
                 dist = d_matrix[hubby,best] /d_matrix[hubby,secondbest]
             else:
-                dist = distance[i,0]/distances[i,1]
+                dist = distances[hubby,0]/distances[hubby,1]
+                best = bests[hubby,0]
             #np.save('d_matrix',d_matrix)
             #print hubby, best, type(hubby),type(best)
             if not switched:
