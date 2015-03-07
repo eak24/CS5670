@@ -100,9 +100,38 @@ class HarrisKeypointDetector(KeypointDetector):
         # orientation for each pixel in 'orientationImage.'
         # You may need to compute a few filtered images to start with
         #TODO-BLOCK-BEGIN
-        import inspect
-        frameinfo = inspect.getframeinfo(inspect.currentframe())
-        print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
+
+        # Find X-derivative of img
+        x_deriv_mask = [[0,0,0],[1,-1,0],[0,0,0]]
+        i_x = ndimage.filters.convolve(srcImage, x_deriv_mask)
+
+        # Find Y-Derivative of img
+        y_deriv_mask = [[0,1,0],[0,-1,0],[0,0,0]]
+        i_y = ndimage.filters.convolve(srcImage, y_deriv_mask)
+
+        # Compute (Ix)^2, (Iy)^2 and (Ix)*(Iy)
+        i_x_sqr = i_x**2
+        i_y_sqr = i_y**2
+        i_x_times_i_y = i_x*i_y
+
+        # Sum the structure tensor values in 5X5 window
+        # Apply 5X5 Guassian mask with .5 standard deviation to the structure tensor images
+        sigma = 0.5
+        gauss_filter_mask = 5      # How many pixels wide the mask is
+        truncate_SD = gauss_filter_mask/(sigma*2)
+        i_x_sqr_sum = ndimage.filters.gaussian_filter(i_x_sqr, sigma, truncate=truncate_SD)
+        i_y_sqr_sum = ndimage.filters.gaussian_filter(i_y_sqr, sigma, truncate=truncate_SD)
+        i_x_times_i_y_sum = ndimage.filters.gaussian_filter(i_x_times_i_y, sigma, truncate=truncate_SD)
+
+        # Compute the corner response R_score=det(M)-alpha*trace(M)^2 for each pixel window
+        # and store in harrisImage
+        alpha = 0.1
+        struct_tensor_det = i_x_sqr_sum*i_y_sqr_sum - i_x_times_i_y_sum**2
+        struct_tensor_trace = i_x_sqr_sum+i_y_sqr_sum
+        harrisImage = struct_tensor_det- alpha*(struct_tensor_trace**2)
+
+        # Compute the angle of the gradient and store in orientationImage
+        orientationImage = 360*(np.arctan2(i_x.flatten(),i_y.flatten()).reshape(orientationImage.shape))/(2*np.pi) 
         #TODO-BLOCK-END
 
         return harrisImage, orientationImage
@@ -121,9 +150,13 @@ class HarrisKeypointDetector(KeypointDetector):
 
         # TODO 2: Compute the local maxima image
         #TODO-BLOCK-BEGIN
-        import inspect
-        frameinfo = inspect.getframeinfo(inspect.currentframe())
-        print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
+
+        # Find the maximum pixels in the 7X7 window
+        harrisImage_max = ndimage.filters.maximum_filter(srcImage, size=(7,7))
+
+        # Return true on the coordinate where the pixel is the maximum, otherwise false
+        destImage = (srcImage == harrisImage_max)
+
         #TODO-BLOCK-END
 
         return destImage
@@ -168,9 +201,12 @@ class HarrisKeypointDetector(KeypointDetector):
 
                 #TODO 3: Fill in feature with location and orientation data here
                 #TODO-BLOCK-BEGIN
-                import inspect
-                frameinfo = inspect.getframeinfo(inspect.currentframe())
-                print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
+
+                f.pt = (x, y)
+                f.size = 10
+                f.angle = orientationImage[y,x]
+                f.response = harrisImage[y,x]
+
                 #TODO-BLOCK-END
 
                 features.append(f)
