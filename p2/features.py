@@ -565,25 +565,33 @@ class RatioFeatureMatcher(FeatureMatcher):
         #TODO-BLOCK-BEGIN
         #if desc1.shape[0]>desc2.shape[0]: #I want desc1 to always have the least elements
         #    return self.matchFeatures(desc2,desc1)
-        d_matrix = spatial.distance.cdist(desc1,desc2)
-        #print d_matrix # d_matrix[i][j]=distnace between f1 and f
+        if not USE_KD:
+            d_matrix = spatial.distance.cdist(desc1,desc2)
+        else:
+            kdt = spatial.KDTree(desc2)        #print d_matrix # d_matrix[i][j]=distnace between f1 and f
 
         matches=[]
+        if USE_KD:
+            distances,bests = kdt.query(desc1,2)
         for hubby in xrange(desc1.shape[0]):
-            best,secondbest = d_matrix[hubby].argpartition(2)[:2] #find the top two 
+            if not USE_KD:
+                best,secondbest = d_matrix[hubby].argpartition(2)[:2] #find the top two 
+                dist = d_matrix[hubby,best] /d_matrix[hubby,secondbest]
+            else:
+                dist = distance[i,0]/distances[i,1]
             #np.save('d_matrix',d_matrix)
             #print hubby, best, type(hubby),type(best)
             if not switched:
                 matches.append(cv2.DMatch(
                 _queryIdx= best,
                 _trainIdx = hubby,
-                _distance = d_matrix[hubby,best] /d_matrix[hubby,secondbest] 
+                _distance = dist
                 ))
             else:
                 matches.append(cv2.DMatch(
                 _trainIdx= hubby,
                 _queryIdx = best,
-                _distance = d_matrix[hubby,best] /d_matrix[hubby,secondbest] 
+                _distance = dist
                 ))
 
         return matches
