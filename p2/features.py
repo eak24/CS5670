@@ -439,8 +439,18 @@ class SSDFeatureMatcher(FeatureMatcher):
         # the two features should have the type
         assert desc1.shape[1] == desc2.shape[1]
 
+
         if desc1.shape[0] == 0 or desc2.shape[0] == 0:
             return []
+
+        switched = False
+        if desc1.shape[0]>desc2.shape[0]:
+            switched=True
+            x=desc1.copy()
+            desc1=desc2.copy()
+            desc2 = x
+            del x
+
 
         # TODO 7: Perform simple feature matching.  This just uses the SSD
         # distance between two feature vectors, and matches a feature in the
@@ -448,10 +458,43 @@ class SSDFeatureMatcher(FeatureMatcher):
         # match multiple features in the first image to the same feature in
         # the second image.
         #TODO-BLOCK-BEGIN
-        import inspect
-        frameinfo = inspect.getframeinfo(inspect.currentframe())
-        print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
-        #TODO-BLOCK-END
+        #if desc1.shape[0]>desc2.shape[0]: #I want desc1 to always have the least elements
+        #    return self.matchFeatures(desc2,desc1)
+        d_matrix = spatial.distance.cdist(desc1,desc2)
+        print d_matrix # d_matrix[i][j]=distnace between f1 and f
+        #husbands_married = np.zeros(desc1.shape[0],dtype=np.bool) #There is no husband that has a wife
+        #wives_married_to = np.ones(desc2.shape[0],dtype='int')*-1 #Each wife is unwed, the index is the husband shes wed to
+        #while not husbands_married.min(): #There is an unmariedd man
+        #    for husband in xrange(desc1.shape[0]): #consider every husband
+        #        if not husbands_married[husband]: #only consider the husband who has no wife
+        #            for wife in d_matrix[husband].argmin(): #consider each wife in order of preference
+        #                #if the wife is unwed or the person she's maried 
+        #                if wives_married_to[wife] ==-1:
+        #                    wives_married_to[wife]=husband
+        #                    husbands_married[husband]=True
+        #                    break 
+        #                if d_matrix[wives_married_to[wife]][wife]>d_matrix[husband][wife]:
+        #                    husbands_married[wives_married_to[wife]]=False
+        #                    wives_married_to[wife]=husband
+        #                    husbands_married[husband]=True
+        #                    break'''
+        matches=[]
+        for hubby in xrange(desc1.shape[0]):
+            best = int(d_matrix[hubby].argmin())
+            np.save('d_matrix',d_matrix)
+            print hubby, best, type(hubby),type(best)
+            if not switched:
+                matches.append(cv2.DMatch(
+                _queryIdx= best,
+                _trainIdx = hubby,
+                _distance = d_matrix[hubby,best] 
+                ))
+            else:
+                matches.append(cv2.DMatch(
+                _trainIdx= hubby,
+                _queryIdx = best,
+                _distance = d_matrix[hubby,best]
+                ))
 
         return matches
 
