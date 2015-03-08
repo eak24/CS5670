@@ -131,7 +131,7 @@ class HarrisKeypointDetector(KeypointDetector):
         harrisImage = struct_tensor_det- alpha*(struct_tensor_trace**2)
 
         # Compute the angle of the gradient and store in orientationImage
-        orientationImage = 360*(np.arctan2(i_x.flatten(),i_y.flatten()).reshape(orientationImage.shape))/(2*np.pi) 
+        orientationImage = 180*(np.arctan2(i_x.flatten(),i_y.flatten()).reshape(orientationImage.shape))/(np.pi) 
         #TODO-BLOCK-END
 
         return harrisImage, orientationImage
@@ -285,9 +285,6 @@ class SimpleFeatureDescriptor(FeatureDescriptor):
             # The descriptor is a 5x5 window of intensities sampled centered on
             # the feature point.
             #TODO-BLOCK-BEGIN
-            import inspect
-            frameinfo = inspect.getframeinfo(inspect.currentframe())
-            print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
             #TODO-BLOCK-END
 
         return desc
@@ -310,7 +307,7 @@ class MOPSFeatureDescriptor(FeatureDescriptor):
         # This image represents the window around the feature you need to
         # compute to store as the feature descriptor
         windowSize = 8
-        desc = np.zeros((len(keypoints), windowSize * windowSize))
+        desc = np.zeros((len(keypoints), windowSize * windowSize),dtype=np.float32)
         grayImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         grayImage = ndimage.gaussian_filter(grayImage, 0.5)
 
@@ -320,17 +317,21 @@ class MOPSFeatureDescriptor(FeatureDescriptor):
             # each pixel in the 40x40 rotated window surrounding
             # the feature to the appropriate pixels
             # in the 8x8 feature descriptor image
-            transMx = np.zeros((2, 3))
+            transMx = np.zeros((2, 3),dtype=np.float32)
 
             #TODO-BLOCK-BEGIN
             
             # Find the matrix by which to translate then rotate the image so that 
             # the max derivative is pointing alog the 1,0 vector and the feature 
             # is at the origin. Note that x and y are switched.
-            rotateMatrix = [[np.sin(f.angle), np.cos(f.angle),0], 
-                [np.cos(f.angle),-np.sin(f.angle),0]]
-            translateMatrix = [[0,1,f.pt[1]],[1,0,f.pt[0]]]
-            transMx = np.dot(rotateMatrix,translateMatrix)
+            angleRad = (np.pi/180)*f.angle
+            rotateMatrix = [[np.cos(angleRad),np.sin(angleRad),0], [-np.sin(angleRad), np.cos(angleRad),0],[0,0,1]]
+            translateMatrix = [[1,0,-f.pt[0]],[0,1,-f.pt[1]],[0,0,1]]
+            transMx = np.dot(rotateMatrix,translateMatrix)[:2]
+
+            #print 'Matrix'
+            print transMx
+            print f.pt
 
             #TODO-BLOCK-END
 
@@ -344,7 +345,9 @@ class MOPSFeatureDescriptor(FeatureDescriptor):
             
             # Normalize the descriptor intensities by computing the following for each 
             # pixel: (intensity-mean(destImage))/StD(destImage)
-            desc[i] = (destImage-destImage.std())/destImage.mean()
+            # print 'mean std'
+            # print destImage.mean(),destImage.std()
+            desc[i] = ((destImage-destImage.std())/destImage.mean()).flatten()
 
             #TODO-BLOCK-END
 
