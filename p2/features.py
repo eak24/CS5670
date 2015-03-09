@@ -132,9 +132,10 @@ class HarrisKeypointDetector(KeypointDetector):
         harrisImage = struct_tensor_det- alpha*(struct_tensor_trace**2)
 
         # Compute the angle of the gradient and store in orientationImage
-        orientationImage = 180*(np.arctan2(i_x.flatten(),i_y.flatten()).reshape(orientationImage.shape))/(np.pi) 
-        #TODO-BLOCK-END
 
+        orientationImage = np.degrees(np.arctan2(i_y.flatten(),i_x.flatten()).reshape(orientationImage.shape)) 
+        #TODO-BLOCK-END
+        print harrisImage.shape
         return harrisImage, orientationImage
 
     def computeLocalMaxima(self, srcImage):
