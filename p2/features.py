@@ -313,7 +313,7 @@ class MOPSFeatureDescriptor(FeatureDescriptor):
         windowSize = 8
         desc = np.zeros((len(keypoints), windowSize * windowSize))
         grayImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        grayImage = ndimage.gaussian_filter(grayImage, .5)
+        grayImage = ndimage.gaussian_filter(grayImage, 2.5)
 
         for i, f in enumerate(keypoints):
             # TODO 5: Compute the transform as described by the feature
@@ -372,7 +372,7 @@ class MOPSFeatureDescriptor(FeatureDescriptor):
             # pixel: (intensity-mean(destImage))/StD(destImage)
             print 'mean', destImage.mean()
             print 'std' , destImage.std()
-            desc[i] = ((destImage-destImage.std())/destImage.mean()).flatten()
+            desc[i] = ((destImage-destImage.mean())/destImage.std()).flatten()
 
             #TODO-BLOCK-END
         assert not np.isnan(desc).any()
