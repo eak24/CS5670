@@ -372,7 +372,7 @@ class MOPSFeatureDescriptor(FeatureDescriptor):
 
             print 'mean', destImage.mean()
             print 'std' , destImage.std()
-            desc[i] = ((destImage-destImage.std())/destImage.mean()).flatten()
+            desc[i] = ((destImage-destImage.mean())/destImage.std()).flatten()
 
             #TODO-BLOCK-END
         assert not np.isnan(desc).any()
