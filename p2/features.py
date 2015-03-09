@@ -313,7 +313,7 @@ class MOPSFeatureDescriptor(FeatureDescriptor):
         windowSize = 8
         desc = np.zeros((len(keypoints), windowSize * windowSize))
         grayImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        grayImage = ndimage.gaussian_filter(grayImage, 2.5)
+        grayImage = ndimage.gaussian_filter(grayImage, .5)
 
         for i, f in enumerate(keypoints):
             # TODO 5: Compute the transform as described by the feature
