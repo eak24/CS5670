@@ -310,7 +310,7 @@ class MOPSFeatureDescriptor(FeatureDescriptor):
         windowSize = 8
         desc = np.zeros((len(keypoints), windowSize * windowSize),dtype=np.float32)
         grayImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        grayImage = ndimage.gaussian_filter(grayImage, 0.5)
+        grayImage = ndimage.gaussian_filter(grayImage, .5)
 
         for i, f in enumerate(keypoints):
             # TODO 5: Compute the transform as described by the feature
@@ -321,18 +321,39 @@ class MOPSFeatureDescriptor(FeatureDescriptor):
             transMx = np.zeros((2, 3),dtype=np.float32)
 
             #TODO-BLOCK-BEGIN
-            
+            print 'point', f.pt[1],f.pt[0]
+            print 'angle', f.angle
+            print grayImage.shape
             # Find the matrix by which to translate then rotate the image so that 
             # the max derivative is pointing alog the 1,0 vector and the feature 
             # is at the origin. Note that x and y are switched.
-            angleRad = (np.pi/180)*f.angle
-            rotateMatrix = [[np.cos(angleRad),np.sin(angleRad),0], [-np.sin(angleRad), np.cos(angleRad),0],[0,0,1]]
-            translateMatrix = [[1,0,-f.pt[0]],[0,1,-f.pt[1]],[0,0,1]]
-            transMx = np.dot(rotateMatrix,translateMatrix)[:2]
 
-            #print 'Matrix'
-            print transMx
-            print f.pt
+            #print 'ang',f.angle
+            ang = np.radians(f.angle)
+            rotateMatrix = [
+                        [np.cos(ang),   np.sin(ang),    0], 
+                        [-np.sin(ang),  np.cos(ang),    0],
+                        [0,                 0,          1]
+            ]
+            translateMatrix = [
+                        [1,     0,      -f.pt[0]],
+                        [0,     1,      -f.pt[1]],
+                        [0,     0,      1]
+            ]
+            scaleMatrix = [
+                        [.2,    0,       0],
+                        [0,     .2,      0],
+                        [0,     0,       1]
+            ]
+            translateMatrix_2 = [
+                        [1,     0,      windowSize/2],
+                        [0,     1,      windowSize/2],
+                        [0,     0,      1]
+            ]
+            transMx  = np.dot(translateMatrix_2,np.dot(scaleMatrix,np.dot(rotateMatrix,translateMatrix)))[:2]
+            #np.save('original',grayImage[f.pt[1]-20:f.pt[1]+20,f.pt[0]-20:f.pt[0]+20])
+#            transMx = np.dot(translateMatrix_2,np.dot(scaleMatrix,translateMatrix) )[:2] 
+            #np.dot(scaleMatrix,translateMatrix)[:2]
 
             #TODO-BLOCK-END
 
@@ -340,18 +361,20 @@ class MOPSFeatureDescriptor(FeatureDescriptor):
             # It expects a 2x3 matrix
             destImage = cv2.warpAffine(grayImage, transMx,
                 (windowSize, windowSize), flags=cv2.INTER_LINEAR)
-
+            #np.save('done',destImage)
+            #quit()
             # TODO 6: fill in the feature descriptor desc for a MOPS descriptor
             #TODO-BLOCK-BEGIN
             
             # Normalize the descriptor intensities by computing the following for each 
             # pixel: (intensity-mean(destImage))/StD(destImage)
-            # print 'mean std'
-            # print destImage.mean(),destImage.std()
+
+            print 'mean', destImage.mean()
+            print 'std' , destImage.std()
             desc[i] = ((destImage-destImage.std())/destImage.mean()).flatten()
 
             #TODO-BLOCK-END
-
+        assert not np.isnan(desc).any()
         return desc
 
 
