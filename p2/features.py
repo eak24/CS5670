@@ -102,13 +102,9 @@ class HarrisKeypointDetector(KeypointDetector):
         # You may need to compute a few filtered images to start with
         #TODO-BLOCK-BEGIN
 
-        # Find X-derivative of img
-        x_deriv_mask = [[0,0,0],[1,-1,0],[0,0,0]]
-        i_x = ndimage.filters.convolve(srcImage, x_deriv_mask)
-
-        # Find Y-Derivative of img
-        y_deriv_mask = [[0,1,0],[0,-1,0],[0,0,0]]
-        i_y = ndimage.filters.convolve(srcImage, y_deriv_mask)
+        # Find X-derivative and Y-Derivative of img using a sobel operator
+        i_x = ndimage.filters.sobel(srcImage, axis=-1)
+        i_y = ndimage.filters.sobel(srcImage, axis=0)
 
         # Compute (Ix)^2, (Iy)^2 and (Ix)*(Iy)
         i_x_sqr = i_x**2
@@ -131,10 +127,11 @@ class HarrisKeypointDetector(KeypointDetector):
         struct_tensor_trace = i_x_sqr_sum+i_y_sqr_sum
         harrisImage = struct_tensor_det- alpha*(struct_tensor_trace**2)
 
-        # Compute the angle of the gradient and store in orientationImage
-
+        # Compute the angle of the gradient and store in orientationImage in degrees
         orientationImage = np.degrees(np.arctan2(i_y.flatten(),i_x.flatten()).reshape(orientationImage.shape)) 
+
         #TODO-BLOCK-END
+
         print harrisImage.shape
         return harrisImage, orientationImage
 
@@ -322,14 +319,12 @@ class MOPSFeatureDescriptor(FeatureDescriptor):
             transMx = np.zeros((2, 3),dtype=np.float32)
 
             #TODO-BLOCK-BEGIN
-            print 'point', f.pt[1],f.pt[0]
-            print 'angle', f.angle
-            print grayImage.shape
             # Find the matrix by which to translate then rotate the image so that 
             # the max derivative is pointing alog the 1,0 vector and the feature 
             # is at the origin. Note that x and y are switched.
 
-            #print 'ang',f.angle
+            # Create the transform matrix that rotates, translates, scales and 
+            # then rotates the image again.
             ang = np.radians(f.angle)
             rotateMatrix = [
                         [np.cos(ang),   np.sin(ang),    0], 
@@ -352,26 +347,19 @@ class MOPSFeatureDescriptor(FeatureDescriptor):
                         [0,     0,      1]
             ]
             transMx  = np.dot(translateMatrix_2,np.dot(scaleMatrix,np.dot(rotateMatrix,translateMatrix)))[:2]
-            #np.save('original',grayImage[f.pt[1]-20:f.pt[1]+20,f.pt[0]-20:f.pt[0]+20])
-#            transMx = np.dot(translateMatrix_2,np.dot(scaleMatrix,translateMatrix) )[:2] 
-            #np.dot(scaleMatrix,translateMatrix)[:2]
-
+            
             #TODO-BLOCK-END
 
             # Call the warp affine function to do the mapping
             # It expects a 2x3 matrix
             destImage = cv2.warpAffine(grayImage, transMx,
                 (windowSize, windowSize), flags=cv2.INTER_LINEAR)
-            #np.save('done',destImage)
-            #quit()
+           
             # TODO 6: fill in the feature descriptor desc for a MOPS descriptor
             #TODO-BLOCK-BEGIN
             
             # Normalize the descriptor intensities by computing the following for each 
             # pixel: (intensity-mean(destImage))/StD(destImage)
-
-            print 'mean', destImage.mean()
-            print 'std' , destImage.std()
             desc[i] = ((destImage-destImage.mean())/destImage.std()).flatten()
 
             #TODO-BLOCK-END
