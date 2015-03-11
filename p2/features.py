@@ -552,13 +552,13 @@ class SSDFeatureMatcher(FeatureMatcher):
         if desc1.shape[0] == 0 or desc2.shape[0] == 0:
             return []
 
-        switched = False
-        if desc1.shape[0]>desc2.shape[0]:
-            switched=True
-            x=desc1.copy()
-            desc1=desc2.copy()
-            desc2 = x
-            del x
+        #switched = False
+        #if desc1.shape[0]>desc2.shape[0]:
+        #    switched=True
+        #    x=desc1.copy()
+        #    desc1=desc2.copy()
+        #    desc2 = x
+        #    del x
 
 
         # TODO 7: Perform simple feature matching.  This just uses the SSD
@@ -589,16 +589,9 @@ class SSDFeatureMatcher(FeatureMatcher):
                 dist = distances[hubby]
             #np.save('d_matrix',d_matrix)
             #print hubby, best, type(hubby),type(best)
-            if not switched:
-                matches.append(cv2.DMatch(
-                _queryIdx= best,
-                _trainIdx = hubby,
-                _distance = dist
-                ))
-            else:
-                matches.append(cv2.DMatch(
-                _trainIdx= hubby,
-                _queryIdx = best,
+            matches.append(cv2.DMatch(
+                _queryIdx= hubby,
+                _trainIdx = best,
                 _distance = dist
                 ))
 
@@ -633,13 +626,13 @@ class RatioFeatureMatcher(FeatureMatcher):
         if desc1.shape[0] == 0 or desc2.shape[0] == 0:
             return []
 
-        switched = False
-        if desc1.shape[0]>desc2.shape[0]:
-            switched=True
-            x=desc1.copy()
-            desc1=desc2.copy()
-            desc2 = x
-            del x
+        #switched = False
+        #if desc1.shape[0]>desc2.shape[0]:
+        #    switched=True
+        #    x=desc1.copy()
+        #    desc1=desc2.copy()
+        #    desc2 = x
+        #    del x
 
 
         # TODO 7: Perform simple feature matching.  This just uses the SSD
@@ -667,18 +660,12 @@ class RatioFeatureMatcher(FeatureMatcher):
                 best = bests[hubby,0]
             #np.save('d_matrix',d_matrix)
             #print hubby, best, type(hubby),type(best)
-            if not switched:
-                matches.append(cv2.DMatch(
-                _queryIdx= best,
-                _trainIdx = hubby,
+            matches.append(cv2.DMatch(
+                _queryIdx= hubby,
+                _trainIdx = best,
                 _distance = dist
                 ))
-            else:
-                matches.append(cv2.DMatch(
-                _trainIdx= hubby,
-                _queryIdx = best,
-                _distance = dist
-                ))
+           
 
         return matches
 
