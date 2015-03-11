@@ -7,7 +7,7 @@ from scipy import ndimage, spatial
 
 import transformations
 
-USE_KD = True
+USE_KD = False
 
 def inbounds(shape, indices):
     assert len(shape) == len(indices)
@@ -201,8 +201,8 @@ class HarrisKeypointDetector(KeypointDetector):
                 #TODO 3: Fill in feature with location and orientation data here
                 #TODO-BLOCK-BEGIN
 
-                f.pt = (x, y)
-                f.size = 10
+                f.pt = x, y
+                f.size = 20
                 f.angle = orientationImage[y,x]
                 f.response = harrisImage[y,x]
 
@@ -275,15 +275,15 @@ class SimpleFeatureDescriptor(FeatureDescriptor):
 
         desc = np.zeros((len(keypoints), 5 * 5))
 
+        # TODO 4:
+            # The descriptor is a 5x5 window of intensities sampled centered on
+            # the feature point.
+            #TODO-BLOCK-BEGIN
         for i, f in enumerate(keypoints):
             x, y = f.pt
             x+=2
             y+=2
             desc[i]=image[y-2:y+3,x-2:x+3].flatten()
-            # TODO 4:
-            # The descriptor is a 5x5 window of intensities sampled centered on
-            # the feature point.
-            #TODO-BLOCK-BEGIN
             #TODO-BLOCK-END
 
         return desc
@@ -309,6 +309,7 @@ class MOPSFeatureDescriptor(FeatureDescriptor):
         desc = np.zeros((len(keypoints), windowSize * windowSize),dtype=np.float32)
         grayImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         grayImage = ndimage.gaussian_filter(grayImage, .5)
+
 
         for i, f in enumerate(keypoints):
             # TODO 5: Compute the transform as described by the feature
@@ -386,7 +387,10 @@ class ORBFeatureDescriptor(KeypointDetector):
         return desc
 
 
-# Compute Custom descriptors (extra credit)
+# Compute Custom descriptors (extra credit):
+# We plan to blen MOPS and SIFT by taking the MOPS of the derivative image as 
+# computed using the Sobel filter. This should then be more sensitive to changes
+# in intensity and not be as distracted by what the intensity happens to be
 class CustomFeatureDescriptor(FeatureDescriptor):
     def describeFeatures(self, image, keypoints):
         '''
@@ -398,7 +402,73 @@ class CustomFeatureDescriptor(FeatureDescriptor):
             Descriptor numpy array, dimensions:
                 keypoint number x feature descriptor dimension
         '''
-        raise NotImplementedError('NOT IMPLEMENTED')
+        image = image.astype(np.float32)
+        image /= 255.
+        # This image represents the window around the feature you need to
+        # compute to store as the feature descriptor
+        windowSize = 8
+        desc = np.zeros((len(keypoints), windowSize * windowSize),dtype=np.float32)
+        grayImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        grayImage = ndimage.gaussian_filter(grayImage, .5)
+
+
+        # Find X-derivative and Y-Derivative of img using a sobel operator
+        i_x = ndimage.filters.sobel(grayImage, axis=-1)
+        i_y = ndimage.filters.sobel(grayImage, axis=0)
+
+        for i, f in enumerate(keypoints):
+            transMx = np.zeros((2, 3),dtype=np.float32)
+
+            #TODO-BLOCK-BEGIN
+            # Find the matrix by which to translate then rotate the image so that 
+            # the max derivative is pointing alog the 1,0 vector and the feature 
+            # is at the origin. Note that x and y are switched.
+
+            # Create the transform matrix that rotates, translates, scales and 
+            # then rotates the image again.
+            ang = np.radians(f.angle)
+            rotateMatrix = [
+                        [np.cos(ang),   np.sin(ang),    0], 
+                        [-np.sin(ang),  np.cos(ang),    0],
+                        [0,                 0,          1]
+            ]
+            translateMatrix = [
+                        [1,     0,      -f.pt[0]],
+                        [0,     1,      -f.pt[1]],
+                        [0,     0,      1]
+            ]
+            scaleMatrix = [
+                        [.2,    0,       0],
+                        [0,     .2,      0],
+                        [0,     0,       1]
+            ]
+            translateMatrix_2 = [
+                        [1,     0,      windowSize/2],
+                        [0,     1,      windowSize/2],
+                        [0,     0,      1]
+            ]
+            transMx  = np.dot(translateMatrix_2,np.dot(scaleMatrix,np.dot(rotateMatrix,translateMatrix)))[:2]
+            
+            #TODO-BLOCK-END
+
+            # Call the warp affine function to do the mapping
+            # It expects a 2x3 matrix
+            destImage_Ix = cv2.warpAffine(i_x, transMx,
+                (windowSize, windowSize), flags=cv2.INTER_LINEAR)
+            destImage_Iy = cv2.warpAffine(i_y, transMx,
+                (windowSize, windowSize), flags=cv2.INTER_LINEAR)
+           
+            # TODO 6: fill in the feature descriptor desc for a MOPS descriptor
+            #TODO-BLOCK-BEGIN
+            
+            # Normalize the descriptor intensities by computing the following for each 
+            # pixel: (intensity-mean(destImage))/StD(destImage)
+            desc[i] = np.concatenate((destImage_Ix[1::2]+destImage_Ix[::2],
+                destImage_Iy[1::2]+destImage_Iy[::2])).flatten()
+
+            #TODO-BLOCK-END
+        assert not np.isnan(desc).any()
+        return desc
 
 
 ## Feature matchers ############################################################
