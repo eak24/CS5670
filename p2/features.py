@@ -7,7 +7,7 @@ from scipy import ndimage, spatial
 
 import transformations
 
-USE_KD = False
+USE_KD = True
 
 def inbounds(shape, indices):
     assert len(shape) == len(indices)
