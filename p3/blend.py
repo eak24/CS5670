@@ -27,6 +27,13 @@ def imageBoundingBox(img, M):
     """
     #TODO 8
     #TODO-BLOCK-BEGIN
+    points = np.array([
+        [0,0],
+        [0,img.shape[1]],
+        [img.shape[0],img.shape[1]],
+        [img.shape[0],img.shape[1]]
+    ] )
+    print M
     import inspect
     frameinfo = inspect.getframeinfo(inspect.currentframe())
     print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
