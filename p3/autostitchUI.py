@@ -16,10 +16,9 @@ import warp
 import alignment
 import blend
 
-DEFAULT_FOCAL_LENGTH = 595
-DEFAULT_K1 = -0.015
-DEFAULT_K2 = 0.001
-DEFAULT_THETA = 0.000
+DEFAULT_FOCAL_LENGTH = 678
+DEFAULT_K1 = -0.21
+DEFAULT_K2 = 0.26
 
 def parse_args():
   parser = argparse.ArgumentParser(description="Panorama Maker")
@@ -166,12 +165,6 @@ class SphericalWarpFrame(BaseFrame):
         self.k2Entry.insert(0, str(DEFAULT_K2)) 
         self.k2Entry.grid(row=3, column=5, sticky=tk.W + tk.E)
 
-        tk.Label(self, text='theta:').grid(row=4, column=4,
-            sticky=tk.W)
-        self.thetaEntry = tk.Entry(self)
-        self.thetaEntry.insert(0, str(DEFAULT_THETA)) 
-        self.thetaEntry.grid(row=4, column=5, sticky=tk.W + tk.E)
-
         self.image = None
 
     def loadImage(self):
@@ -181,7 +174,7 @@ class SphericalWarpFrame(BaseFrame):
             self.setImage(image)
 
     def getK1(self):
-        k1 = -0.15
+        k1 = DEFAULT_K1
         try:
             k1 = float(self.k1Entry.get())
         except:
@@ -189,20 +182,12 @@ class SphericalWarpFrame(BaseFrame):
         return k1
 
     def getK2(self):
-        k2 = 0.001
+        k2 = DEFAULT_K2
         try:
             k2 = float(self.k2Entry.get())
         except:
             uiutils.error('You entered an invalid k2! Please try again.')
         return k2
-
-    def getTheta(self):
-        theta = 0.00
-        try:
-            theta = float(self.thetaEntry.get())
-        except:
-            uiutils.error('You entered an invalid theta! Please try again.')
-        return theta
 
     def warpImage(self, *args):
         if self.image is not None:
@@ -210,9 +195,8 @@ class SphericalWarpFrame(BaseFrame):
             focalLength = float(self.focalLengthSlider.get())
             k1 = self.getK1()
             k2 = self.getK2()
-            theta = self.getTheta()
             warpedImage = warp.warpSpherical(self.image, focalLength, \
-                    k1, k2, theta)
+                    k1, k2)
             self.setImage(warpedImage)
             self.setStatus('Warped image with focal length ' + str(focalLength))
         elif len(args) == 0: # i.e., click on the button
@@ -282,12 +266,6 @@ class StitchingBaseFrame(BaseFrame):
         self.k2Entry.insert(0, str(DEFAULT_K2)) 
         self.k2Entry.grid(row=4, column=5, sticky=tk.W + tk.E)
 
-        tk.Label(self, text='theta:').grid(row=5, column=4,
-            sticky=tk.W)
-        self.thetaEntry = tk.Entry(self)
-        self.thetaEntry.insert(0, str(DEFAULT_THETA)) 
-        self.thetaEntry.grid(row=5, column=5, sticky=tk.W + tk.E)
- 
     def computeMapping(self, leftImage, rightImage):
         leftGrey = cv2.cvtColor(leftImage, cv2.COLOR_BGR2GRAY)
         rightGrey = cv2.cvtColor(rightImage, cv2.COLOR_BGR2GRAY)
@@ -312,7 +290,7 @@ class StitchingBaseFrame(BaseFrame):
         return alignment.alignPair(leftKeypoints, rightKeypoints, matches,
             motionModel, nRANSAC, RANSACThreshold)
 
-    def compute(self):
+    def compute(self, *args):
         raise NotImplementedError('Implement the computation')
 
     def getFocalLength(self):
@@ -327,7 +305,7 @@ class StitchingBaseFrame(BaseFrame):
         return 0
 
     def getK1(self):
-        k1 = -0.15
+        k1 = DEFAULT_K1
         try:
             k1 = float(self.k1Entry.get())
         except:
@@ -335,20 +313,12 @@ class StitchingBaseFrame(BaseFrame):
         return k1
 
     def getK2(self):
-        k2 = 0.001
+        k2 = DEFAULT_K2
         try:
             k2 = float(self.k2Entry.get())
         except:
             uiutils.error('You entered an invalid k2! Please try again.')
         return k2
-
-    def getTheta(self):
-        theta = 0.00
-        try:
-            theta = float(self.thetaEntry.get())
-        except:
-            uiutils.error('You entered an invalid theta! Please try again.')
-        return theta
 
 class AlignmentFrame(StitchingBaseFrame):
     def __init__(self, parent, root):
@@ -391,19 +361,18 @@ class AlignmentFrame(StitchingBaseFrame):
         else:
             self.compute()
 
-    def compute(self):
+    def compute(self, *args):
         if self.leftImage is not None and self.rightImage is not None:
             focalLength = self.getFocalLength()
             k1 = self.getK1()
             k2 = self.getK2()
-            theta = self.getTheta()
             if focalLength <= 0:
                 return
             if self.motionModelVar.get() == alignment.eTranslate:
                 left = warp.warpSpherical(self.leftImage, focalLength, \
-                        k1, k2, theta)
+                        k1, k2)
                 right = warp.warpSpherical(self.rightImage, focalLength, \
-                        k1, k2, theta)
+                        k1, k2)
             else:
                 left = self.leftImage
                 right = self.rightImage
@@ -478,7 +447,7 @@ class PanoramaFrame(StitchingBaseFrame):
           dirpath))
         
     def getK1(self):
-        k1 = -0.15
+        k1 = DEFAULT_K1
         try:
             k1 = float(self.k1Entry.get())
         except:
@@ -486,34 +455,25 @@ class PanoramaFrame(StitchingBaseFrame):
         return k1
 
     def getK2(self):
-        k2 = 0.001
+        k2 = DEFAULT_K2
         try:
             k2 = float(self.k2Entry.get())
         except:
             uiutils.error('You entered an invalid k2! Please try again.')
         return k2
 
-    def getTheta(self):
-        theta = 0.00
-        try:
-            theta = float(self.thetaEntry.get())
-        except:
-            uiutils.error('You entered an invalid theta! Please try again.')
-        return theta
-
-    def compute(self):
+    def compute(self, *args):
         if self.images is not None and len(self.images) > 0:
             f = self.getFocalLength()
             if f <= 0:
               return
             k1 = self.getK1()
             k2 = self.getK2()
-            theta = self.getTheta()
 
             processedImages = None
 
             if self.motionModelVar.get() == alignment.eTranslate:
-                processedImages = [warp.warpSpherical(i, f, k1, k2, theta) \
+                processedImages = [warp.warpSpherical(i, f, k1, k2) \
                     for i in self.images]
             else:
                 processedImages = self.images
