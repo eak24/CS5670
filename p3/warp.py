@@ -70,9 +70,32 @@ def computeSphericalWarpMappings(dstShape, f, k1, k2, R):
     # as output for your code. They should all have the shape 
     # (img_height, img_width)
     # TODO-BLOCK-BEGIN
-    import inspect
-    frameinfo = inspect.getframeinfo(inspect.currentframe())
-    print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
+
+    #>>>COMPUTE THE EUCLIDEAN COORDINATES<<<<
+    points = np.ones((3,dstShape[0]*dstShape[1]))
+    points[0] = (np.sin(xf)*np.cos(yf)).flatten() #xhat
+    points[1] = np.sin(yf).flatten() #yhat
+    points[2] = (np.cos(xf)* np.cos(yf)).flatten() #zhat
+    ##
+    
+    #>>>ROTATE ACCORDING TO R<<
+    points = np.dot(R,points)
+    #
+
+    #>>>PROJECT to the Z=1 plane#
+    points /= points[2]
+
+    xf = points[0].reshape(xf.shape)
+    yf = points[1].reshape(yf.shape)
+
+    gamma_2 = xf*xf + yf*yf
+    gamma_4 = gamma_2 *gamma_2
+    xt = xf*(one + k1*gamma_2 +k2*gamma_4)
+    yt = yf*(one + k1*gamma_2 +k2*gamma_4)
+
+    #import inspect
+    #frameinfo = inspect.getframeinfo(inspect.currentframe())
+    #print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
     # TODO-BLOCK-END
     # END TODO
     # Convert back to regular pixel coordinates
