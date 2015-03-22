@@ -28,15 +28,19 @@ def imageBoundingBox(img, M):
     #TODO 8
     #TODO-BLOCK-BEGIN
     points = np.array([
-        [0,0],
-        [0,img.shape[1]],
-        [img.shape[0],img.shape[1]],
-        [img.shape[0],img.shape[1]]
-    ] )
-    print M
-    import inspect
-    frameinfo = inspect.getframeinfo(inspect.currentframe())
-    print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
+        [0,0,1],
+        [0,img.shape[1],1],
+        [img.shape[0],img.shape[1],1],
+        [img.shape[0],img.shape[1],1]
+    ] ).T
+    points_p  =np.dot(M,points)
+    minY = points_p[0].min()
+    maxY = points_p[0].max()
+    minX = points_p[1].min()
+    maxX = points_p[0].max()
+    #import inspect
+    #frameinfo = inspect.getframeinfo(inspect.currentframe())
+    #print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
     #TODO-BLOCK-END
     return int(minX), int(minY), int(maxX), int(maxY)
 
