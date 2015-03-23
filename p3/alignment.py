@@ -73,17 +73,13 @@ def computeHomography(f1, f2, matches):
     #Homography to be calculated
     H = np.eye(3)
 
-    print Vt[len(s)-1,0:9]
     #BEGIN TODO 3
     #Fill the homography H with the appropriate elements of the SVD
     #TODO-BLOCK-BEGIN
 
     #Fill with eigenvector corresponding to lowest eigenvalue (last in s)
-    #print s
-    H[0]=Vt[len(s)-1,0:3]
-    H[1]=Vt[len(s)-1,3:6]
-    H[2]=Vt[len(s)-1,6:9]
-    
+    H=Vt[-1].reshape(3,3)
+
     #TODO-BLOCK-END
     #END TODO
 
@@ -135,10 +131,14 @@ def alignPair(f1, f2, matches, m, nRANSAC, RANSACthresh):
 
         #Randomly select the matches and compute homography
         #Translation and rotation requires 2 random matches and Homographies require 4
-        if m == eTranslate: sample_size=2
-        else: sample_size=4
-        sample_matches=random.sample(matches,sample_size)         
-        H_next=computeHomography(f1,f2,sample_matches)
+        if m == eTranslate: 
+            sample_size=2
+            sample_matches=random.sample(matches,sample_size)
+            H_next=leastSquaresFit(f1,f2,sample_matches,m,[0,1])
+        else: 
+            sample_size=8
+            sample_matches=random.sample(matches,sample_size)         
+            H_next=computeHomography(f1,f2,sample_matches)
 
         #Count the number of inliers for found homography (matches for which
         #delta<=RANSACthresh) and find H with greatest number of inliers.
@@ -190,12 +190,9 @@ def getInliers(f1, f2, matches, M, RANSACthresh):
         (b_x, b_y) = f2[m.trainIdx].pt
         p = np.array([[a_x], [a_y], [1]])
         Mp = np.dot(M, p)
-        p = np.array([Mp[0,0], Mp[1,0]])
         q = np.array([[b_x], [b_y]])
-        print i 
-        print m.distance
+        p = np.array([Mp[0]/Mp[2], Mp[1]/Mp[2]])
         distance = np.linalg.norm(p-q)
-        print distance
         if distance < RANSACthresh:
             inlier_indices = inlier_indices + [i]
         
@@ -267,9 +264,7 @@ def leastSquaresFit(f1, f2, matches, m, inlier_indices):
         for i in range(len(inlier_indices)):
             inlier_matches = inlier_matches + [matches[inlier_indices[i]]]
 
-        #print inlier_matches
-
-        computeHomography(f1 , f2, inlier_matches)
+        M = computeHomography(f1 , f2, inlier_matches)
 
         #TODO-BLOCK-END
         #END TODO
