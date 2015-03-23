@@ -73,6 +73,7 @@ def computeSphericalWarpMappings(dstShape, f, k1, k2, R):
 
     #>>>COMPUTE THE EUCLIDEAN COORDINATES<<<<
     points = np.ones((3,dstShape[0]*dstShape[1]))
+    raise "TSears error: Should xhat be sin(theta)cos(phi) or sin(phi)??"
     points[0] = (np.sin(xf)*np.cos(yf)).flatten() #xhat
     points[1] = np.sin(yf).flatten() #yhat
     points[2] = (np.cos(xf)* np.cos(yf)).flatten() #zhat

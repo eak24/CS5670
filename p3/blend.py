@@ -60,8 +60,19 @@ def accumulateBlend(img, acc, M, blendWidth):
     # Fill in this routine
     #TODO-BLOCK-BEGIN
     import inspect
+    blender = np.ones((img.shape[0],img.shape[1]),dtype=img.dtype)
+    blender[:,:blendWidth+1]=np.linspace(0,1,blendWidth+1)
+    blender[:,-blendWidth+1:]=np.linspace(1,0,blendWidth+1)
+    blended = cv2.warpPerspective(blender, M, (outputWidth, accHeight),
+        flags=cv2.INTER_LINEAR)
+    unblended = 1-blended
+    for c in xrange(3):
+        acc[:,:,c] = acc[:,:,c]*unblended +blended*cv2.warpPerspective(acc[:,:,c], M, (outputWidth, accHeight),
+        flags=cv2.INTER_LINEAR)
+
     frameinfo = inspect.getframeinfo(inspect.currentframe())
-    print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
+
+    #print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
     #TODO-BLOCK-END
     # END TODO
 
@@ -76,11 +87,16 @@ def normalizeBlend(acc):
     # BEGIN TODO
     # fill in this routine..
     #TODO-BLOCK-BEGIN
-    import inspect
-    frameinfo = inspect.getframeinfo(inspect.currentframe())
-    print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
+    #import inspect
+    #frameinfo = inspect.getframeinfo(inspect.currentframe())
+    #print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
     #TODO-BLOCK-END
     # END TODO
+    img = acc[:,:,:2]
+    acc[:,:,3]/=255
+    img[:,:,0]*=acc[:,:,3]
+    img[:,:,1]*=acc[:,:,3]
+    img[:,:,2]*=acc[:,:,3]
     return img
 
 def blendImages(ipv, blendWidth, is360=False):
@@ -101,7 +117,7 @@ def blendImages(ipv, blendWidth, is360=False):
     width = -1 # Assumes all images are the same width
     M = np.identity(3)
     for i in ipv:
-        M = i.position
+        M = i.position #the 3 by 3 matrix
         img = i.img
         _, w, c = img.shape
         if channels == -1:
@@ -111,9 +127,13 @@ def blendImages(ipv, blendWidth, is360=False):
         # BEGIN TODO 9
         # add some code here to update minX, ..., maxY
         #TODO-BLOCK-BEGIN
-        import inspect
-        frameinfo = inspect.getframeinfo(inspect.currentframe())
-        print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
+        minY = min(minY,M[1,1])
+        maxY = max(maxY,M[1,1])
+        minX = min(minX,M[0,0])
+        maxX = max(maxX,M[0,0])
+        #import inspect
+        #frameinfo = inspect.getframeinfo(inspect.currentframe())
+        #print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
         #TODO-BLOCK-END
         # END TODO
 
