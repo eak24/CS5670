@@ -38,9 +38,29 @@ def computeHomography(f1, f2, matches):
         #Fill in the matrix A in this loop.
         #Access elements using square brackets. e.g. A[0,0]
         #TODO-BLOCK-BEGIN
-        import inspect
-        frameinfo = inspect.getframeinfo(inspect.currentframe())
-        print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
+
+        #Fill in first row and repeat
+        A[2*i,0] = a_x
+        A[2*i,1] = a_y
+        A[2*i,2] = 1
+        A[2*i,3] = 0
+        A[2*i,4] = 0 
+        A[2*i,5] = 0 
+        A[2*i,6] = -b_x*a_x 
+        A[2*i,7] = -b_x*a_y 
+        A[2*i,8] = -b_x 
+
+        #Fill in second row
+        A[2*i+1,0] = 0
+        A[2*i+1,1] = 0 
+        A[2*i+1,2] = 0 
+        A[2*i+1,3] = a_x 
+        A[2*i+1,4] = a_y 
+        A[2*i+1,5] = 1 
+        A[2*i+1,6] = -b_y*a_x 
+        A[2*i+1,7] = -b_y*a_y 
+        A[2*i+1,8] = -b_y 
+
         #TODO-BLOCK-END
         #END TODO
 
@@ -53,12 +73,17 @@ def computeHomography(f1, f2, matches):
     #Homography to be calculated
     H = np.eye(3)
 
+    print Vt[len(s)-1,0:9]
     #BEGIN TODO 3
     #Fill the homography H with the appropriate elements of the SVD
     #TODO-BLOCK-BEGIN
-    import inspect
-    frameinfo = inspect.getframeinfo(inspect.currentframe())
-    print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
+
+    #Fill with eigenvector corresponding to lowest eigenvalue (last in s)
+    #print s
+    H[0]=Vt[len(s)-1,0:3]
+    H[1]=Vt[len(s)-1,3:6]
+    H[2]=Vt[len(s)-1,6:9]
+    
     #TODO-BLOCK-END
     #END TODO
 
@@ -99,9 +124,33 @@ def alignPair(f1, f2, matches, m, nRANSAC, RANSACthresh):
     #This function should also call get_inliers and, at the end,
     #least_squares_fit.
     #TODO-BLOCK-BEGIN
-    import inspect
-    frameinfo = inspect.getframeinfo(inspect.currentframe())
-    print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
+
+    #Store the indices of the highest scoring homography and the homography itself
+    inlier_indices_best = []
+    H_best = np.eye(3)
+    
+    for i in range(nRANSAC):
+
+        #How do I handle the TRANSLATION???
+
+        #Randomly select the matches and compute homography
+        #Translation and rotation requires 2 random matches and Homographies require 4
+        if m == eTranslate: sample_size=2
+        else: sample_size=4
+        sample_matches=random.sample(matches,sample_size)         
+        H_next=computeHomography(f1,f2,sample_matches)
+
+        #Count the number of inliers for found homography (matches for which
+        #delta<=RANSACthresh) and find H with greatest number of inliers.
+        inlier_indices_next = getInliers(f1, f2, matches, H_next, RANSACthresh)
+        if len(inlier_indices_next)>len(inlier_indices_best):
+            inlier_indices_best = inlier_indices_next
+            H_best = H_next
+
+    #Compute least-squares motion-estimate using the inliers of the 
+    #maximum score homography
+    M = leastSquaresFit(f1, f2, matches, m, inlier_indices_best)
+
     #TODO-BLOCK-END
     #END TODO
     return M
@@ -136,9 +185,20 @@ def getInliers(f1, f2, matches, M, RANSACthresh):
         #by M, is within RANSACthresh of its match in f2.
         #If so, append i to inliers
         #TODO-BLOCK-BEGIN
-        import inspect
-        frameinfo = inspect.getframeinfo(inspect.currentframe())
-        print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
+        m = matches[i]
+        (a_x, a_y) = f1[m.queryIdx].pt
+        (b_x, b_y) = f2[m.trainIdx].pt
+        p = np.array([[a_x], [a_y], [1]])
+        Mp = np.dot(M, p)
+        p = np.array([Mp[0,0], Mp[1,0]])
+        q = np.array([[b_x], [b_y]])
+        print i 
+        print m.distance
+        distance = np.linalg.norm(p-q)
+        print distance
+        if distance < RANSACthresh:
+            inlier_indices = inlier_indices + [i]
+        
         #TODO-BLOCK-END
         #END TODO
         
@@ -183,9 +243,11 @@ def leastSquaresFit(f1, f2, matches, m, inlier_indices):
             #Use this loop to compute the average translation vector
             #over all inliers.
             #TODO-BLOCK-BEGIN
-            import inspect
-            frameinfo = inspect.getframeinfo(inspect.currentframe())
-            print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
+
+            inlier = matches[inlier_indices[i]]
+            u = u + f2[inlier.trainIdx].pt[0] - f1[inlier.queryIdx].pt[0]
+            v = v + f2[inlier.trainIdx].pt[1] - f1[inlier.queryIdx].pt[1]
+
             #TODO-BLOCK-END
             #END TODO
     
@@ -200,9 +262,15 @@ def leastSquaresFit(f1, f2, matches, m, inlier_indices):
         #Compute a homography M using all inliers.
         #This should call computeHomography.
         #TODO-BLOCK-BEGIN
-        import inspect
-        frameinfo = inspect.getframeinfo(inspect.currentframe())
-        print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
+
+        inlier_matches = []
+        for i in range(len(inlier_indices)):
+            inlier_matches = inlier_matches + [matches[inlier_indices[i]]]
+
+        #print inlier_matches
+
+        computeHomography(f1 , f2, inlier_matches)
+
         #TODO-BLOCK-END
         #END TODO
 
