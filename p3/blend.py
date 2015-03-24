@@ -69,7 +69,7 @@ def accumulateBlend(img, acc, M, blendWidth):
     print 'blended shape ',blended.shape
     print 'alpha shape ', acc[:,:,3].shape
     print 'acc shape ',acc.shape
-    np.save('blended',blended)
+    #np.save('blended',blended)
     acc[:,:,3] +=blended
     for c in xrange(3):
         acc[:,:,c] = acc[:,:,c] +blended *cv2.warpPerspective(img[:,:,c], M, (acc.shape[1], acc.shape[0]),
@@ -109,8 +109,8 @@ def normalizeBlend(acc):
     print 'g max min', img[:,:,1].max(),img[:,:,1].min()
     print 'b max min', img[:,:,2].max(),img[:,:,2].min()
     print 'alph max min', img[:,:,3].max(),img[:,:,3].min()
-    img[:,:,3]=255
-
+    #img[:,:,3]=255
+    return np.asarray(img[:,:,:3],dtype=np.uint8)
 def blendImages(ipv, blendWidth, is360=False):
     """
        INPUT:
