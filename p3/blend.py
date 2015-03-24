@@ -29,14 +29,15 @@ def imageBoundingBox(img, M):
     #TODO-BLOCK-BEGIN
     points = np.array([
         [0,0,1],
-        [0,img.shape[1],1],
-        [img.shape[0],img.shape[1],1],
-        [img.shape[0],img.shape[1],1]
+        [0,img.shape[0],1],
+        [img.shape[1],img.shape[0],1],
+        [img.shape[1],0,1]
     ] ).T
     points_p  =np.dot(M,points)
-    minY = points_p[0].min()
-    maxY = points_p[0].max()
-    minX = points_p[1].min()
+    points_p/=points_p[2]
+    minY = points_p[1].min()
+    maxY = points_p[1].max()
+    minX = points_p[0].min()
     maxX = points_p[0].max()
     #import inspect
     #frameinfo = inspect.getframeinfo(inspect.currentframe())
@@ -60,14 +61,18 @@ def accumulateBlend(img, acc, M, blendWidth):
     # Fill in this routine
     #TODO-BLOCK-BEGIN
     import inspect
-    blender = np.ones((img.shape[0],img.shape[1]),dtype=img.dtype)*255
-    blender[:,:blendWidth+1]=np.linspace(0,255,blendWidth+1)
-    blender[:,-blendWidth-1:]=np.linspace(255,0,blendWidth+1)
-    blended = cv2.warpPerspective(blender, M, (outputWidth, accHeight),
+    blender = np.ones((img.shape[0],img.shape[1]),dtype=img.dtype)
+    blender[:,:blendWidth+1]=np.linspace(0,1,blendWidth+1)
+    blender[:,-blendWidth-1:]=np.linspace(1,0,blendWidth+1)
+    blended = cv2.warpPerspective(blender, M, (acc.shape[1], acc.shape[0]),
         flags=cv2.INTER_LINEAR)
-    unblended = 1-blended
+    print 'blended shape ',blended.shape
+    print 'alpha shape ', acc[:,:,3].shape
+    print 'acc shape ',acc.shape
+    np.save('blended',blended)
+    acc[:,:,3] +=blended
     for c in xrange(3):
-        acc[:,:,c] = acc[:,:,c]*unblended/255. +blended/255.*cv2.warpPerspective(acc[:,:,c], M, (acc.shape[1], acc.shape[0]),
+        acc[:,:,c] = acc[:,:,c] +blended *cv2.warpPerspective(img[:,:,c], M, (acc.shape[1], acc.shape[0]),
         flags=cv2.INTER_LINEAR)
 
     frameinfo = inspect.getframeinfo(inspect.currentframe())
@@ -92,12 +97,19 @@ def normalizeBlend(acc):
     #print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
     #TODO-BLOCK-END
     # END TODO
-    img = acc[:,:,:2]
-    acc[:,:,3]/=255
-    img[:,:,0]*=acc[:,:,3]
-    img[:,:,1]*=acc[:,:,3]
-    img[:,:,2]*=acc[:,:,3]
-    return img
+    img = acc
+    o =np.maximum(1,acc[:,:,3])
+    img[:,:,0]/=o
+    img[:,:,1]/=o
+    img[:,:,2]/=o
+    #np.save('acc_alpha',img[:,:,3])
+    #np.save('acc_r',img[:,:,0])
+    print 'max mins'
+    print 'r max min', img[:,:,0].max(),img[:,:,0].min()
+    print 'g max min', img[:,:,1].max(),img[:,:,1].min()
+    print 'b max min', img[:,:,2].max(),img[:,:,2].min()
+    print 'alph max min', img[:,:,3].max(),img[:,:,3].min()
+    img[:,:,3]=255
 
 def blendImages(ipv, blendWidth, is360=False):
     """
@@ -118,19 +130,20 @@ def blendImages(ipv, blendWidth, is360=False):
     M = np.identity(3)
     for i in ipv:
         M = i.position #the 3 by 3 matrix
+        print 'M',repr(M)
         img = i.img
         _, w, c = img.shape
         if channels == -1:
             channels = c
             width = w
-
+        _minX,_minY,_maxX,_maxY = imageBoundingBox(img,M)
         # BEGIN TODO 9
         # add some code here to update minX, ..., maxY
         #TODO-BLOCK-BEGIN
-        minY = min(minY,M[1,1])
-        maxY = max(maxY,M[1,1])
-        minX = min(minX,M[0,0])
-        maxX = max(maxX,M[0,0])
+        minY = min(minY,_minY)
+        maxY = max(maxY,_maxY)
+        minX = min(minX,_minX)
+        maxX = max(maxX,_maxX)
         #import inspect
         #frameinfo = inspect.getframeinfo(inspect.currentframe())
         #print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
@@ -138,6 +151,8 @@ def blendImages(ipv, blendWidth, is360=False):
         # END TODO
 
     # Create an accumulator image
+    print "minx,maxX" ,minX,maxX
+    print "miny,maxy", minY,maxY
     accWidth = int(math.ceil(maxX) - math.floor(minX))
     accHeight = int(math.ceil(maxY) - math.floor(minY))
     acc = np.zeros((accHeight, accWidth, channels + 1))
@@ -183,5 +198,5 @@ def blendImages(ipv, blendWidth, is360=False):
     croppedImage = cv2.warpPerspective(compImage, A, (outputWidth, accHeight),
         flags=cv2.INTER_LINEAR)
 
-    return croppedImage
+    return compImage #should be croppedImage!
 
