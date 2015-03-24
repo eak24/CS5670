@@ -60,14 +60,14 @@ def accumulateBlend(img, acc, M, blendWidth):
     # Fill in this routine
     #TODO-BLOCK-BEGIN
     import inspect
-    blender = np.ones((img.shape[0],img.shape[1]),dtype=img.dtype)
-    blender[:,:blendWidth+1]=np.linspace(0,1,blendWidth+1)
-    blender[:,-blendWidth+1:]=np.linspace(1,0,blendWidth+1)
+    blender = np.ones((img.shape[0],img.shape[1]),dtype=img.dtype)*255
+    blender[:,:blendWidth+1]=np.linspace(0,255,blendWidth+1)
+    blender[:,-blendWidth-1:]=np.linspace(255,0,blendWidth+1)
     blended = cv2.warpPerspective(blender, M, (outputWidth, accHeight),
         flags=cv2.INTER_LINEAR)
     unblended = 1-blended
     for c in xrange(3):
-        acc[:,:,c] = acc[:,:,c]*unblended +blended*cv2.warpPerspective(acc[:,:,c], M, (outputWidth, accHeight),
+        acc[:,:,c] = acc[:,:,c]*unblended/255. +blended/255.*cv2.warpPerspective(acc[:,:,c], M, (outputWidth, accHeight),
         flags=cv2.INTER_LINEAR)
 
     frameinfo = inspect.getframeinfo(inspect.currentframe())
