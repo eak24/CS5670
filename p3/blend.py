@@ -67,7 +67,7 @@ def accumulateBlend(img, acc, M, blendWidth):
         flags=cv2.INTER_LINEAR)
     unblended = 1-blended
     for c in xrange(3):
-        acc[:,:,c] = acc[:,:,c]*unblended/255. +blended/255.*cv2.warpPerspective(acc[:,:,c], M, (outputWidth, accHeight),
+        acc[:,:,c] = acc[:,:,c]*unblended/255. +blended/255.*cv2.warpPerspective(acc[:,:,c], M, (acc.shape[1], acc.shape[0]),
         flags=cv2.INTER_LINEAR)
 
     frameinfo = inspect.getframeinfo(inspect.currentframe())
