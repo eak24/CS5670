@@ -58,12 +58,22 @@ def accumulateBlend(img, acc, M, blendWidth):
     # BEGIN TODO 10
     # Fill in this routine
     #TODO-BLOCK-BEGIN
+    import inspect
     #Create mask of for the image
-    blender = np.ones((img.shape[0],img.shape[1]),dtype=img.dtype)
+    blender = np.ones((img.shape[0],img.shape[1]),dtype='float32')
+    #nimg = np.asarray(img,dtype='float32')
+    #blender[:,:blendWidth+1]=np.linspace(0,1,blendWidth+1)
+    #blender[:,-blendWidth-1:]=np.linspace(1,0,blendWidth+1)
+    #nblender = blender.copy()
+    #nblender[:blendWidth+1,:]=np.linspace(0,1,blendWidth+1).reshape(blendWidth+1,1)
+    #nblender[-blendWidth-1:,:]=np.linspace(1,0,blendWidth+1).reshape(blendWidth+1,1)
+    #blender = np.minimum(nblender,blender)
+    #del nblender
+    #g = lambda x:  x#gaussian_filter(x,.5)
+    blender[(img[:,:,0]+img[:,:,1]+img[:,:,2])==0]=-1
     #Feather the edges linearly from 0 to 1 over blendwidth # of pixels on both edges
-    blender[:,:blendWidth+1]=np.linspace(0,1,blendWidth+1)
-    blender[:,-blendWidth-1:]=np.linspace(1,0,blendWidth+1)
-    blender[(img[:,:,0]+img[:,:,1]+img[:,:,2])==0]=0
+    blender = gaussian_filter(blender,blendWidth/2.0,mode='constant',cval=-1)
+    blender = np.maximum(blender,0)
     blended = cv2.warpPerspective(blender, M, (acc.shape[1], acc.shape[0]),
         flags=cv2.INTER_LINEAR)
     print 'blended shape ',blended.shape
