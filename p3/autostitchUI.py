@@ -483,10 +483,21 @@ class PanoramaFrame(StitchingBaseFrame):
             for i in range(0, len(processedImages) - 1):
                 self.setStatus('Computing mapping from {0} to {1}'.format(i,
                   i+1))
-                ipv.append(blend.ImageInfo('', processedImages[i], t))
-                t = self.computeMapping(processedImages[i+1], processedImages[i])\
-                    .dot(t) 
-            ipv.append(blend.ImageInfo('', processedImages[len(processedImages)-1],t))
+                ipv.append(blend.ImageInfo('', processedImages[i],
+                    np.linalg.inv(t)))
+                t = self.computeMapping(processedImages[i],
+                        processedImages[i+1]).dot(t) 
+            
+            ipv.append(blend.ImageInfo('', 
+                processedImages[len(processedImages)-1], np.linalg.inv(t)))
+            
+            t = self.computeMapping(processedImages[len(processedImages)-1],
+                    processedImages[0]).dot(t)
+            
+            if self.is360Var.get():
+                ipv.append(blend.ImageInfo('', processedImages[0],
+                    np.linalg.inv(t)))
+            
             self.setStatus('Blending Images')
             self.setImage(blend.blendImages(ipv, 
                 int(self.blendWidthSlider.get()), self.is360Var.get() == 1))
