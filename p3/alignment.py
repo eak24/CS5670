@@ -147,9 +147,6 @@ def alignPair(f1, f2, matches, m, nRANSAC, RANSACthresh):
             inlier_indices_best = inlier_indices_next
             H_best = H_next
 
-        #Raise error if no homographies with inliers were found
-        if len(inlier_indices_best)==0: raise RuntimeError("Homography computed wrong")
-
     #Compute least-squares motion-estimate using the inliers of the 
     #maximum score homography
     M = leastSquaresFit(f1, f2, matches, m, inlier_indices_best)

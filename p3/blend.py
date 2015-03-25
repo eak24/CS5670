@@ -224,13 +224,11 @@ def blendImages(ipv, blendWidth, is360=False):
     if is360:
         left_img = ipv[0]
         right_img = ipv[len(ipv)-1]
-        left_img_corners = imageBoundingBox(left_img.img, left_img.position)
-        right_img_corners = imageBoundingBox(right_img.img, right_img.position)
-        left_img_corner_ll = [left_img_corners[0],left_img_corners[1]]
-        right_img_corner_lr = [right_img_corners[2],right_img_corners[1]]
-        # Amount to shear (s where y'=s*x)
-        width = right_img_corner_lr[0]-left_img_corner_ll[0]
-        drift = right_img_corner_lr[1]-left_img_corner_ll[1]
+        (minx, miny, _, _) = imageBoundingBox(left_img.img, left_img.position)
+        (_,miny_drifted,maxX) = imageBoundingBox(right_img.img, right_img.position)
+        # Amount to shear (s where y'=y+s*x ==> s=(y'-y)/x=drift/x)
+        width = maxX-minx
+        drift = miny_drifted-miny
         A[1,0] = drift/width
     # Warp and crop the composite
     croppedImage = cv2.warpPerspective(compImage, A, (outputWidth, accHeight),
