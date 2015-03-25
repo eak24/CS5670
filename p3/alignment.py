@@ -136,7 +136,7 @@ def alignPair(f1, f2, matches, m, nRANSAC, RANSACthresh):
             sample_matches=random.sample(matches,sample_size)
             H_next=leastSquaresFit(f1,f2,sample_matches,m,[0,1])
         else: 
-            sample_size=8
+            sample_size=4
             sample_matches=random.sample(matches,sample_size)         
             H_next=computeHomography(f1,f2,sample_matches)
 
