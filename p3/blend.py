@@ -4,6 +4,13 @@ from alignment import computeHomography
 import numpy as np
 import cv2
 from scipy.ndimage.filters import gaussian_filter
+from sys import argv as args
+
+if '--extra-credit' in list(p.strip() for p in args):
+    EXTRA_CREDIT_GAUSSIAN_BLENDING = True
+    print 'Doing gaussian blur '
+else:
+    EXTRA_CREDIT_GAUSSIAN_BLENDING = False
 
 class ImageInfo:
     def __init__(self, name, img, position):
@@ -61,19 +68,23 @@ def accumulateBlend(img, acc, M, blendWidth):
     import inspect
     #Create mask of for the image
     blender = np.ones((img.shape[0],img.shape[1]),dtype='float32')
+    if  EXTRA_CREDIT_GAUSSIAN_BLENDING:
+        blender[(img[:,:,0]+img[:,:,1]+img[:,:,2])==0]=-1
+        blender = gaussian_filter(blender,blendWidth/2.0,mode='constant',cval=-1)
+        blender = np.maximum(blender,0)
+    else:
+        blender[:,:blendWidth+1]=np.linspace(0,1,blendWidth+1)
+        blender[:,-blendWidth-1:]=np.linspace(1,0,blendWidth+1)
+        nblender = blender.copy()
+        nblender[:blendWidth+1,:]=np.linspace(0,1,blendWidth+1).reshape(blendWidth+1,1)
+        nblender[-blendWidth-1:,:]=np.linspace(1,0,blendWidth+1).reshape(blendWidth+1,1)
+        blender = np.minimum(nblender,blender)
+        blender[(img[:,:,0]+img[:,:,1]+img[:,:,2])==0]=0
     #nimg = np.asarray(img,dtype='float32')
-    #blender[:,:blendWidth+1]=np.linspace(0,1,blendWidth+1)
-    #blender[:,-blendWidth-1:]=np.linspace(1,0,blendWidth+1)
-    #nblender = blender.copy()
-    #nblender[:blendWidth+1,:]=np.linspace(0,1,blendWidth+1).reshape(blendWidth+1,1)
-    #nblender[-blendWidth-1:,:]=np.linspace(1,0,blendWidth+1).reshape(blendWidth+1,1)
-    #blender = np.minimum(nblender,blender)
     #del nblender
     #g = lambda x:  x#gaussian_filter(x,.5)
-    blender[(img[:,:,0]+img[:,:,1]+img[:,:,2])==0]=-1
     #Feather the edges linearly from 0 to 1 over blendwidth # of pixels on both edges
-    blender = gaussian_filter(blender,blendWidth/2.0,mode='constant',cval=-1)
-    blender = np.maximum(blender,0)
+
     blended = cv2.warpPerspective(blender, M, (acc.shape[1], acc.shape[0]),
         flags=cv2.INTER_LINEAR)
     print 'blended shape ',blended.shape
@@ -186,31 +197,6 @@ def blendImages(ipv, blendWidth, is360=False):
     
     # Compute the affine transform
     A = np.identity(3)
-    left = ipv[0]
-    right = ipv[-1]
-    srcPoints = np.zeros((2,4),dtype=left.position.dtype)
-    destPoints = np.array([
-        [0,0,outputWidth,outputWidth], #top left bottom left top right bottom right
-        [0,accHeight,0,accHeight]],dtype=left.position.dtype)
-    
-    left_pos = left.position.dot(np.array(
-                [[0,0,1],
-                [0,left.img.shape[1],1]],dtype=left.position.dtype).T)
-    
-    right_pos = right.position.dot(np.array(
-                [[right.img.shape[0],0,1],
-                [right.img.shape[0],right.img.shape[1],1]],dtype=left.position.dtype).T)
-    left_pos/=left_pos[-1]
-    right_pos /= right_pos[-1]
-    srcPoints[:,:2] = left_pos[:-1]
-    srcPoints[:,-2:] = right_pos[:-1]
-    print 'src',srcPoints
-    print  'dest',destPoints
-    print 'srcd' ,srcPoints.dtype
-    print 'destd',destPoints.dtype
-    A = cv2.findHomography(srcPoints.T,destPoints.T,method=0)[0]
-    print 'A',A
-
 
 
 
@@ -225,7 +211,7 @@ def blendImages(ipv, blendWidth, is360=False):
         left_img = ipv[0]
         right_img = ipv[len(ipv)-1]
         (minx, miny, _, _) = imageBoundingBox(left_img.img, left_img.position)
-        (_,miny_drifted,maxX) = imageBoundingBox(right_img.img, right_img.position)
+        (_,miny_drifted,maxX,_) = imageBoundingBox(right_img.img, right_img.position)
         # Amount to shear (s where y'=y+s*x ==> s=(y'-y)/x=drift/x)
         width = maxX-minx
         drift = miny_drifted-miny
