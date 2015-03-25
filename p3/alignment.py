@@ -77,7 +77,7 @@ def computeHomography(f1, f2, matches):
     #Fill the homography H with the appropriate elements of the SVD
     #TODO-BLOCK-BEGIN
 
-    #Fill with eigenvector corresponding to lowest eigenvalue (last in s)
+    #Fill with eigenvector corresponding to lowest eigenvalue (last row in Vt)
     H=Vt[-1].reshape(3,3)
 
     #TODO-BLOCK-END
@@ -127,16 +127,16 @@ def alignPair(f1, f2, matches, m, nRANSAC, RANSACthresh):
     
     for i in range(nRANSAC):
 
-        #How do I handle the TRANSLATION???
-
         #Randomly select the matches and compute homography
         #Translation and rotation requires 2 random matches and Homographies require 4
         if m == eTranslate: 
             sample_size=2
+            if len(matches)<sample_size: raise RuntimeError("Not enough matches for translation")
             sample_matches=random.sample(matches,sample_size)
             H_next=leastSquaresFit(f1,f2,sample_matches,m,[0,1])
         else: 
             sample_size=4
+            if len(matches)<sample_size: raise RuntimeError("Not enough matches for Homography")
             sample_matches=random.sample(matches,sample_size)         
             H_next=computeHomography(f1,f2,sample_matches)
 
@@ -146,6 +146,9 @@ def alignPair(f1, f2, matches, m, nRANSAC, RANSACthresh):
         if len(inlier_indices_next)>len(inlier_indices_best):
             inlier_indices_best = inlier_indices_next
             H_best = H_next
+
+        #Raise error if no homographies with inliers were found
+        if len(inlier_indices_best)==0: raise RuntimeError("Homography computed wrong")
 
     #Compute least-squares motion-estimate using the inliers of the 
     #maximum score homography
@@ -190,9 +193,9 @@ def getInliers(f1, f2, matches, M, RANSACthresh):
         (b_x, b_y) = f2[m.trainIdx].pt
         p = np.array([[a_x], [a_y], [1]])
         Mp = np.dot(M, p)
+        Mp = np.array([Mp[0]/Mp[2], Mp[1]/Mp[2]])
         q = np.array([[b_x], [b_y]])
-        p = np.array([Mp[0]/Mp[2], Mp[1]/Mp[2]])
-        distance = np.linalg.norm(p-q)
+        distance = np.linalg.norm(Mp-q)
         if distance < RANSACthresh:
             inlier_indices = inlier_indices + [i]
         
