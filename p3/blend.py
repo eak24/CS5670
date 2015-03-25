@@ -1,8 +1,9 @@
 import sys
 import math
-
+from alignment import computeHomography
 import numpy as np
 import cv2
+from scipy.ndimage.filters import gaussian_filter
 
 class ImageInfo:
     def __init__(self, name, img, position):
@@ -99,10 +100,10 @@ def normalizeBlend(acc):
     #TODO-BLOCK-END
     # END TODO
     img = acc
-    o =np.maximum(1,acc[:,:,3])
-    img[:,:,0]/=o
-    img[:,:,1]/=o
-    img[:,:,2]/=o
+    #o =np.maximum(1,acc[:,:,3])
+    img[:,:,0]/=acc[:,:,3]
+    img[:,:,1]/=acc[:,:,3]
+    img[:,:,2]/=acc[:,:,3]
     #np.save('acc_alpha',img[:,:,3])
     #np.save('acc_r',img[:,:,0])
     print 'max mins'
@@ -184,6 +185,32 @@ def blendImages(ipv, blendWidth, is360=False):
     outputWidth = (accWidth - width) if is360 else accWidth
     # Compute the affine transform
     A = np.identity(3)
+    left = ipv[0]
+    right = ipv[-1]
+    srcPoints = np.zeros((2,4),dtype=left.position.dtype)
+    destPoints = np.array([
+        [0,0,outputWidth,outputWidth], #top left bottom left top right bottom right
+        [0,accHeight,0,accHeight]],dtype=left.position.dtype)
+    left_pos = left.position.dot(np.array(
+                [[0,0,1],
+                [0,left.img.shape[1],1]],dtype=left.position.dtype).T)
+    right_pos = right.position.dot(np.array(
+                [[right.img.shape[0],0,1],
+                [right.img.shape[0],right.img.shape[1],1]],dtype=left.position.dtype).T)
+    left_pos/=left_pos[-1]
+    right_pos /= right_pos[-1]
+    srcPoints[:,:2] = left_pos[:-1]
+    srcPoints[:,-2:] = right_pos[:-1]
+    print 'src',srcPoints
+    print  'dest',destPoints
+    print 'srcd' ,srcPoints.dtype
+    print 'destd',destPoints.dtype
+    A = cv2.findHomography(srcPoints.T,destPoints.T,method=0)[0]
+    print 'A',A
+
+
+
+
     # BEGIN TODO 11
     # fill in appropriate entries in A to trim the left edge and
     # to take out the vertical drift if this is a 360 panorama
@@ -199,5 +226,5 @@ def blendImages(ipv, blendWidth, is360=False):
     croppedImage = cv2.warpPerspective(compImage, A, (outputWidth, accHeight),
         flags=cv2.INTER_LINEAR)
 
-    return compImage #should be croppedImage!
+    return compImage
 
