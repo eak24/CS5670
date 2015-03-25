@@ -23,8 +23,8 @@ def imageBoundingBox(img, M):
        OUTPUT:
          minX: int for the minimum X value of a corner
          minY: int for the minimum Y value of a corner
-         minX: int for the maximum X value of a corner
-         minY: int for the maximum Y value of a corner
+         maxX: int for the maximum X value of a corner
+         maxY: int for the maximum Y value of a corner
     """
     #TODO 8
     #TODO-BLOCK-BEGIN
@@ -40,9 +40,6 @@ def imageBoundingBox(img, M):
     maxY = points_p[1].max()
     minX = points_p[0].min()
     maxX = points_p[0].max()
-    #import inspect
-    #frameinfo = inspect.getframeinfo(inspect.currentframe())
-    #print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
     #TODO-BLOCK-END
     return int(minX), int(minY), int(maxX), int(maxY)
 
@@ -61,8 +58,9 @@ def accumulateBlend(img, acc, M, blendWidth):
     # BEGIN TODO 10
     # Fill in this routine
     #TODO-BLOCK-BEGIN
-    import inspect
+    #Create mask of for the image
     blender = np.ones((img.shape[0],img.shape[1]),dtype=img.dtype)
+    #Feather the edges linearly from 0 to 1 over blendwidth # of pixels on both edges
     blender[:,:blendWidth+1]=np.linspace(0,1,blendWidth+1)
     blender[:,-blendWidth-1:]=np.linspace(1,0,blendWidth+1)
     blender[(img[:,:,0]+img[:,:,1]+img[:,:,2])==0]=0
@@ -77,9 +75,6 @@ def accumulateBlend(img, acc, M, blendWidth):
         acc[:,:,c] = acc[:,:,c] +blended *cv2.warpPerspective(img[:,:,c], M, (acc.shape[1], acc.shape[0]),
         flags=cv2.INTER_LINEAR)
 
-    frameinfo = inspect.getframeinfo(inspect.currentframe())
-
-    #print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
     #TODO-BLOCK-END
     # END TODO
 
@@ -94,11 +89,6 @@ def normalizeBlend(acc):
     # BEGIN TODO
     # fill in this routine..
     #TODO-BLOCK-BEGIN
-    #import inspect
-    #frameinfo = inspect.getframeinfo(inspect.currentframe())
-    #print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
-    #TODO-BLOCK-END
-    # END TODO
     img = acc
     #o =np.maximum(1,acc[:,:,3])
     img[:,:,0]/=acc[:,:,3]
@@ -113,6 +103,8 @@ def normalizeBlend(acc):
     print 'alph max min', img[:,:,3].max(),img[:,:,3].min()
     #img[:,:,3]=255
     return np.asarray(img[:,:,:3],dtype=np.uint8)
+    #TODO-BLOCK-END
+    # END TODO
 def blendImages(ipv, blendWidth, is360=False):
     """
        INPUT:
@@ -146,9 +138,6 @@ def blendImages(ipv, blendWidth, is360=False):
         maxY = max(maxY,_maxY)
         minX = min(minX,_minX)
         maxX = max(maxX,_maxX)
-        #import inspect
-        #frameinfo = inspect.getframeinfo(inspect.currentframe())
-        #print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
         #TODO-BLOCK-END
         # END TODO
 
@@ -173,6 +162,7 @@ def blendImages(ipv, blendWidth, is360=False):
             p = np.array([0.5 * width, 0, 1])
             p = M_trans.dot(p)
             x_init, y_init = p[:2] / p[2]
+
         # Last image
         if count == (len(ipv) - 1):
             p = np.array([0.5 * width, 0, 1])
@@ -183,6 +173,7 @@ def blendImages(ipv, blendWidth, is360=False):
     
     # Determine the final image width
     outputWidth = (accWidth - width) if is360 else accWidth
+    
     # Compute the affine transform
     A = np.identity(3)
     left = ipv[0]
@@ -191,9 +182,11 @@ def blendImages(ipv, blendWidth, is360=False):
     destPoints = np.array([
         [0,0,outputWidth,outputWidth], #top left bottom left top right bottom right
         [0,accHeight,0,accHeight]],dtype=left.position.dtype)
+    
     left_pos = left.position.dot(np.array(
                 [[0,0,1],
                 [0,left.img.shape[1],1]],dtype=left.position.dtype).T)
+    
     right_pos = right.position.dot(np.array(
                 [[right.img.shape[0],0,1],
                 [right.img.shape[0],right.img.shape[1],1]],dtype=left.position.dtype).T)
@@ -216,15 +209,23 @@ def blendImages(ipv, blendWidth, is360=False):
     # to take out the vertical drift if this is a 360 panorama
     # (i.e. is360 is true)
     #TODO-BLOCK-BEGIN
-    import inspect
-    frameinfo = inspect.getframeinfo(inspect.currentframe())
-    #print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
-    #TODO-BLOCK-END
-    # END TODO
-
+    
+    # Fix vertical drift
+    if is360:
+        left_img = ipv[0]
+        right_img = ipv[len(ipv)-1]
+        left_img_corners = imageBoundingBox(left_img.img, left_img.position)
+        right_img_corners = imageBoundingBox(right_img.img, right_img.position)
+        left_img_corner_ll = [left_img_corners[0],left_img_corners[1]]
+        right_img_corner_lr = [right_img_corners[2],right_img_corners[1]]
+        # Amount to shear (s where y'=s*x)
+        width = right_img_corner_lr[0]-left_img_corner_ll[0]
+        drift = right_img_corner_lr[1]-left_img_corner_ll[1]
+        A[1,0] = drift/width
     # Warp and crop the composite
     croppedImage = cv2.warpPerspective(compImage, A, (outputWidth, accHeight),
         flags=cv2.INTER_LINEAR)
 
-    return compImage
-
+    return croppedImage
+     #TODO-BLOCK-END
+    # END TODO
