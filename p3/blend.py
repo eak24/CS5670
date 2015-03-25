@@ -64,6 +64,7 @@ def accumulateBlend(img, acc, M, blendWidth):
     blender = np.ones((img.shape[0],img.shape[1]),dtype=img.dtype)
     blender[:,:blendWidth+1]=np.linspace(0,1,blendWidth+1)
     blender[:,-blendWidth-1:]=np.linspace(1,0,blendWidth+1)
+    blender[(img[:,:,0]+img[:,:,1]+img[:,:,2])==0]=0
     blended = cv2.warpPerspective(blender, M, (acc.shape[1], acc.shape[0]),
         flags=cv2.INTER_LINEAR)
     print 'blended shape ',blended.shape
@@ -190,7 +191,7 @@ def blendImages(ipv, blendWidth, is360=False):
     #TODO-BLOCK-BEGIN
     import inspect
     frameinfo = inspect.getframeinfo(inspect.currentframe())
-    print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
+    #print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
     #TODO-BLOCK-END
     # END TODO
 
