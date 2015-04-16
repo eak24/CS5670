@@ -1,0 +1,172 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0010 
+header_name {.h} 
+code_name {.cpp} 
+gridx 4 
+gridy 4 
+snap 4
+class svmUI {open
+} {
+  Function {svmUI()} {open
+  } {
+    Fl_Window mainWindow {
+      label {Single View Metrology User Interface} open
+      xywh {656 135 864 687} visible
+    } {
+      Fl_Output mouseInfo {
+        label {mouse status:}
+        xywh {92 659 772 28}
+      }
+      Fl_Menu_Bar mainMenu {open selected
+        xywh {0 0 864 28}
+      } {
+        submenu {} {
+          label {&File} open
+          xywh {0 0 100 20}
+        } {
+          menuitem {} {
+            label {Open &Image}
+            callback {imgView->OpenImage();}
+            xywh {0 0 100 20}
+          }
+          menuitem {} {
+            label {&Open Model}
+            callback {imgView->OpenModel();}
+            xywh {0 0 100 20}
+          }
+          menuitem {} {
+            label {&Save Model}
+            callback {imgView->SaveModel();}
+            xywh {0 0 100 20}
+          }
+          menuitem {} {
+            label {Save &VRML}
+            callback {imgView->SaveVRML();}
+            xywh {0 0 100 20}
+          }
+          menuitem {} {
+            label {&Exit}
+            callback {imgView->HideAll();
+hide();}
+            xywh {0 0 100 20}
+          }
+        }
+        submenu {} {
+          label {&Edit} open
+          xywh {0 0 100 20}
+        } {
+          menuitem editPoint {
+            label {&Point}
+            callback {imgView->SetEditMode(EDIT_POINT);}
+            xywh {0 0 100 20} type Radio labelcolor 1
+          }
+          menuitem editXLine {
+            label {&X Line}
+            callback {imgView->SetEditMode(EDIT_XLINE);}
+            xywh {0 0 100 20} type Radio labelcolor 1
+          }
+          menuitem editYLine {
+            label {&Y Line}
+            callback {imgView->SetEditMode(EDIT_YLINE);}
+            xywh {0 0 100 20} type Radio labelcolor 1
+          }
+          menuitem editZLine {
+            label {&Z Line}
+            callback {imgView->SetEditMode(EDIT_ZLINE);}
+            xywh {0 0 100 20} type Radio labelcolor 1
+          }
+          menuitem editOLine {
+            label {&Other Line}
+            callback {imgView->SetEditMode(EDIT_OLINE);}
+            xywh {0 0 100 20} type Radio labelcolor 1
+          }
+          menuitem editPly {
+            label {Poly&gon}
+            callback {imgView->SetEditMode(EDIT_POLYGON);}
+            xywh {0 0 100 20} type Radio labelcolor 1
+          }
+        }
+        submenu {} {
+          label {&Draw} open
+          xywh {0 0 100 20}
+        } {
+          menuitem drawPoint {
+            label {&Points}
+            callback {imgView->SetDrawMode(DRAW_POINT,drawPoint->value());}
+            xywh {0 0 100 20} type Toggle labelcolor 4
+          }
+          menuitem drawLine {
+            label {&Lines}
+            callback {imgView->SetDrawMode(DRAW_LINE,drawLine->value());}
+            xywh {0 0 100 20} type Toggle labelcolor 4
+          }
+          menuitem drawPly {
+            label {Poly&gons}
+            callback {imgView->SetDrawMode(DRAW_POLYGON,drawPly->value());}
+            xywh {0 0 100 20} type Toggle labelcolor 4
+          }
+          menuitem draw3D {
+            label {3D &Model}
+            callback {imgView->SetDrawMode(DRAW_3D,draw3D->value());}
+            xywh {0 0 100 20} type Toggle labelcolor 4
+          }
+        }
+        submenu {} {
+          label {&Tools} open
+          xywh {0 0 100 20}
+        } {
+          menuitem computeVps {
+            label {Compute &VPs}
+            callback {imgView->computeVanishingPoints();}
+            xywh {0 0 100 20}
+          }
+          menuitem sameZPlane {
+            label {Same &Z Plane}
+            callback {imgView->sameZPlane();}
+            xywh {0 0 100 20} shortcut 0x4007a
+          }
+          menuitem sameXY {
+            label {Same &XY}
+            callback {imgView->sameXY();}
+            xywh {0 0 100 20} shortcut 0x40078
+          }
+          menuitem samePlane {
+            label {Same &Plane}
+            callback {imgView->samePlane();}
+            xywh {0 0 100 20} shortcut 0x40070 divider
+          }
+          menuitem guideLines {
+            label {&Guidelines}
+            callback {imgView->setGuideLines(guideLines.value());}
+            xywh {0 0 100 20} type Toggle shortcut 0x40067
+          }
+        }
+        submenu {} {
+          label {&Help} open
+          xywh {4 4 100 20}
+        } {
+          menuitem {} {
+            label {&About my single view modeler?}
+            callback {imgView->AboutMe();}
+            xywh {0 0 100 20}
+          }
+        }
+      }
+      Fl_Box imgView {
+        xywh {0 29 864 628} box DOWN_BOX
+        code0 {\#include "svm.h"}
+        class ImgView
+      }
+    }
+    code {imgView->svmui = this;
+mainWindow->resizable(imgView);} {}
+  }
+  Function {show()} {open
+  } {
+    code {mainWindow->show();} {}
+  }
+  Function {hide()} {open
+  } {
+    code {mainWindow->hide();} {}
+  }
+} 
