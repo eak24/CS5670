@@ -1,0 +1,241 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+  "http://www.w3.org/TR/html4/loose.dtd">
+
+<html lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta name="Author" content="Michalis Kamburelis">
+
+<meta name="Language" content="English">
+
+<title>Standard command-line options for OpenGL programs</title>
+
+
+<!--
+  This is unclean, but it's more comfortable to keep below CSS
+  directly inside HTML page. This is in kambi_common.php,
+  that should be useful for both michalis.ii and castle-engine.sf.net webpages,
+  and must be suitable also for offline documentation in castle-engine programs.
+-->
+<!-- link type="text/css" rel="stylesheet" media="all"  href="kambi-php-lib/kambi_common.css" -->
+
+<style type="text/css"><!--
+body { background: white; font-family: sans-serif; }
+
+dt { font-weight: bold; }
+div.page_footer { }
+span.page_copyright { font-size: smaller }
+
+span.version_number { font-size: small }
+
+div.quick_links_bottom_line { text-align: left; }
+
+.rss_link {
+  float: right;
+  background: red;
+  padding: 0.3em;
+  border: thin outset black;
+}
+
+.rss_link a {
+  color: white;
+  font-weight: bold
+}
+--></style>
+
+
+<link rel="alternate" type="application/rss+xml"
+  title="Castle Game Engine - News Feed"
+  href="http://castle-engine.sourceforge.net/news_feed.php">
+
+<link type="text/css" rel="stylesheet" media="all" href="castle-engine.css">
+<link type="text/css" rel="stylesheet" href="colorbox/example3/colorbox.css">
+
+
+<script type="text/javascript" src="castle-engine.js"></script>
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="colorbox/jquery.colorbox-min.js"></script>
+
+<style type="text/css"><!--
+/**
+ * GeSHi Dynamically Generated Stylesheet
+ * --------------------------------------
+ * Dynamically generated stylesheet for delphi
+ * CSS class: sourcecode, CSS id: 
+ * GeSHi (C) 2004 - 2007 Nigel McNie, 2007 - 2008 Benny Baumann
+ * (http://qbnz.com/highlighter/ and http://geshi.org/)
+ * --------------------------------------
+ */
+.delphi.sourcecode .de1, .delphi.sourcecode .de2 {font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;}
+.delphi.sourcecode  {font-family:monospace;}
+.delphi.sourcecode .imp {font-weight: bold; color: red;}
+.delphi.sourcecode li, .delphi.sourcecode .li1 {font-weight: normal; vertical-align:top;}
+.delphi.sourcecode .ln {width:1px;text-align:right;margin:0;padding:0 2px;vertical-align:top;}
+.delphi.sourcecode .li2 {font-weight: bold; vertical-align:top;}
+.delphi.sourcecode .kw1 {color: #000000; font-weight: bold;}
+.delphi.sourcecode .kw2 {color: #000000; font-weight: bold;}
+.delphi.sourcecode .kw3 {color: #000066;}
+.delphi.sourcecode .kw4 {color: #000066; font-weight: bold;}
+.delphi.sourcecode .co1 {color: #808080; font-style: italic;}
+.delphi.sourcecode .co2 {color: #008000; font-style: italic;}
+.delphi.sourcecode .coMULTI {color: #808080; font-style: italic;}
+.delphi.sourcecode .es0 {color: #ff0000; font-weight: bold;}
+.delphi.sourcecode .br0 {color: #000066;}
+.delphi.sourcecode .sy0 {color: #000066;}
+.delphi.sourcecode .sy1 {color: #000066;}
+.delphi.sourcecode .sy2 {color: #000066;}
+.delphi.sourcecode .sy3 {color: #000066;}
+.delphi.sourcecode .st0 {color: #ff0000;}
+.delphi.sourcecode .nu0 {color: #0000ff;}
+.delphi.sourcecode .me1 {color: #006600;}
+.delphi.sourcecode .re0 {color: #0000cc;}
+.delphi.sourcecode .re1 {color: #ff0000;}
+.delphi.sourcecode .ln-xtra, .delphi.sourcecode li.ln-xtra, .delphi.sourcecode div.ln-xtra {background-color: #ffc;}
+.delphi.sourcecode span.xtra { display:block; }
+ -->
+</style>
+
+<script type="text/javascript">
+/* <![CDATA[ */
+    (function() {
+        var s = document.createElement('script'), t = document.getElementsByTagName('script')[0];
+        s.type = 'text/javascript';
+        s.async = true;
+        s.src = 'http://api.flattr.com/js/0.6/load.js?mode=auto';
+        t.parentNode.insertBefore(s, t);
+    })();
+/* ]]> */
+</script><script src="https://apis.google.com/js/platform.js" async defer></script>
+  </head>
+<body>
+
+
+  <div class="header">
+    <!--img class="header_icon" src="images/header_icon.png" alt="Castle Game Engine icon" /-->
+    <div class="google-search-container">
+<script>
+  (function() {
+    var cx = '012479576662529301542:be-myf53lua';
+    var gcse = document.createElement('script');
+    gcse.type = 'text/javascript';
+    gcse.async = true;
+    gcse.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') +
+        '//www.google.com/cse/cse.js?cx=' + cx;
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(gcse, s);
+  })();
+</script>
+<div class="gcse-search" data-enableAutoComplete="true"></div>
+</div>
+    <div class="header_title"><a href="http://castle-engine.sourceforge.net/index.php">Castle Game Engine</a></div>
+    
+    <table class="header_menu">
+      <tr>
+        <td colspan="15" class="higher higher_left">&larr; Users</td>
+        <td colspan="6" class="higher higher_right">Developers &rarr;</td>
+      </tr>
+      <tr><td class="lower_separator"><div>&nbsp;</div></td><td class="lower"><a href="http://castle-engine.sourceforge.net/index.php">Intro</a></td><td class="lower_separator"><div>&nbsp;</div></td><td class="lower"><a href="http://castle-engine.sourceforge.net/news.php">News</a></td><td class="lower_separator"><div>&nbsp;</div></td><td class="lower"><a href="view3dscene.html" title="VRML / X3D browser, and a viewer for other 3D model formats">view3dscene</a></td><td class="lower_separator"><div>&nbsp;</div></td><td class="lower"><a href="http://castle-engine.sourceforge.net/castle.php" title="First-person perspective game, in a dark fantasy setting">The Castle</a></td><td class="lower_separator"><div>&nbsp;</div></td><td class="lower"><a href="http://castle-engine.sourceforge.net/all_programs.php" title="All the games and tools using our 3D engine" id="current">All Programs</a></td><td class="lower_separator"><div>&nbsp;</div></td><td class="lower"><a href="http://castle-engine.sourceforge.net/forum.php" title="Ask for help, report bugs, discuss features">Forum</a></td><td class="lower_separator"><div>&nbsp;</div></td><td class="lower"><a href="http://castle-engine.sourceforge.net/donate.php">Donate</a></td><td class="lower_separator"><div>&nbsp;</div></td><td class="lower"><a href="http://castle-engine.sourceforge.net/engine.php" title="Sources and documentation for developers">Engine</a></td><td class="lower_separator"><div>&nbsp;</div></td><td class="lower"><a href="vrml_x3d.html" title="Our extensions and status of VRML/X3D implementation">VRML/X3D</a></td><td class="lower_separator"><div>&nbsp;</div></td><td class="lower"><a href="http://castle-engine.sourceforge.net/blender.php" title="Customized Blender X3D exporter">Blender</a></td><td class="lower_separator"><div>&nbsp;</div></td>
+      </tr>
+    </table>
+  </div><div class="content">
+<h2>Standard command-line options (for programs with a graphical interface)</h2>
+
+<p>Most of the programs using <a href="http://castle-engine.sourceforge.net/engine.php">Castle Game Engine <i>(online docs)</i></a> accept the command-line options listed below. <small>(Developers: <a href="http://castle-engine.sourceforge.net/apidoc/html/CastleWindow.TCastleWindowCustom.html#ParseParameters">use this in your own programs</a>).</small>
+
+<dl class="command_line_options_list">
+  <dt>--fullscreen</dt>
+
+  <dd><p>Start in fullscreen mode.
+
+    <p>For some programs, you can also switch between fullscreen and windowed
+    mode at runtime. Standard key shortcut for this is <tt>F11</tt>.
+  </dd>
+
+  <dt>--fullscreen-custom WIDTHxHEIGHT</dt>
+
+  <dd><p>Start in fullscreen mode with screen resolution changed
+    to WIDTH x HEIGHT.
+
+    <p>If given WIDTH x HEIGHT resolution is not available then error message
+    will be shown and program will start in fullscreen mode using
+    current screen resolution.
+
+  <dt>--geometry WIDTHxHEIGHT&lt;sign&gt;XOFF&lt;sign&gt;YOFF</dt>
+
+  <dd><p>Start in window mode with given WIDTH and HEIGHT
+    positioned at (XOFF, YOFF).
+
+    <p>&lt;sign&gt; is either "<tt>+</tt>" or "<tt>-</tt>".
+    <tt>+XOFF</tt> means that left window border should be
+    <tt>XOFF</tt> pixels from left screen border. Note that
+    <tt>XOFF</tt> itself may be negative (e.g. in
+    <tt>--geometry 100x100+-100+100</tt>) and then window will be positioned
+    slightly offscreen. Similarly, <tt>-XOFF</tt> means that right
+    window border should be <tt>XOFF</tt> pixels from right screen border.
+    Similar for <tt>+YOFF</tt> or <tt>-YOFF</tt> &mdash; they specify
+    distance from upper or lower screen border.
+
+    <p>You can omit the <tt>&lt;sign&gt;XOFF&lt;sign&gt;YOFF</tt> part
+    and provide only <tt>WIDTHxHEIGHT</tt> part. You can also omit
+    <tt>WIDTHxHEIGHT</tt> part and provide only
+    <tt>&lt;sign&gt;XOFF&lt;sign&gt;YOFF</tt> part.
+
+    <!--  Literka "x" w <tt>WIDTHxHEIGHT</tt> może tak naprawdę
+    być dużym "X" lub małym "x". -->
+
+    <p>This option works the same as standard <tt>-geometry</tt> option for
+    most XWindows programs.
+
+    <p>Note that window manager <!-- under XWindows
+    or Windows itself under Windows --> may disallow or modify requested
+    window position and/or size. Note that you can also of course change
+    window size and position of the window while the program is running
+    (by dragging window border and such).</dd>
+
+  <dt>--display DISPLAY-NAME</dt>
+  <dd><p><i>(Only on platforms using X Windows, in practice: Unix)</i>
+    <br>Set the XWindows display to use.</dd>
+</dl>
+
+<p>See also <a href="common_options.html">general notes about options understood by our programs</a>.
+
+</div><script type="text/javascript">
+  jQuery('a.screenshot').colorbox({opacity: 0.9, rel:'screenshot', maxWidth:'90%', maxHeight:'90%'});
+</script>
+  
+<hr>
+
+<div class="page_footer">
+
+    <address>
+    By Michalis Kamburelis, as part of
+    <a href="http://castle-engine.sourceforge.net/">Castle Game Engine</a>.
+    </address>
+    
+  <table class="footer-table"><tr>
+
+    <td><a href="http://sourceforge.net/projects/castle-engine">Hosted by SourceForge.net</a></td>
+
+    <td><span class="page_copyright">Copyright <a href="http://michalis.ii.uni.wroc.pl/~michalis/">Michalis Kamburelis</a>.
+This page is considered part of documentation of my programs,
+and you are free to modify and further distribute it on terms of
+<a href="http://www.gnu.org/licenses/gpl.html">GNU General Public License</a>.
+</span><br/>
+      <small>We use <a href="http://en.wikipedia.org/wiki/HTTP_cookie">cookies</a>.
+      Like every other frickin' website on the Internet.
+      Blink twice if you understand.</small>
+    </td>
+
+    
+  </tr></table>
+
+
+
+  
+</div>
+
+</body>
+</html>
+
