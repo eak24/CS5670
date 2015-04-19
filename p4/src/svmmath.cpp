@@ -49,6 +49,7 @@ SVMPoint BestFitIntersect(const std::list<SVMLine> &lines, int imgWidth, int img
     int numLines = (int) lines.size();
     Matrix3 A = Matrix3::Zero(numLines, 3);	
 
+
     // Transformation for numerical stability
 
     // Note: iterate through the lines list as follows:
@@ -59,7 +60,46 @@ SVMPoint BestFitIntersect(const std::list<SVMLine> &lines, int imgWidth, int img
     // This minimum eigenvector of A^T A is also the same as the minimum singular vector of A.
 
     //TODO-BLOCK-BEGIN
-    printf("TODO: %s:%d\n", __FILE__, __LINE__);
+    /*TSears April 19 -- Will do the numerical conditioning step if we have time*/
+
+    //1) specify each line's endpoints e1 and e2 in homogeneous coordinates
+    struct SVMPoint *p1, *p2,t;
+    int r= 0;
+    Vec3<double> r_line;
+    double * row_ptr; 
+    for (std::list<SVMLine>::const_iterator i=lines.begin();i!=lines.end();i++){
+        r+=1;
+        p1 = i->pnt1;
+        p2 = i->pnt2;
+        p1->w=1;
+        p2->w=1;
+        //2) compute a homogenous coordinate vector representing the line
+        //as the cross product of its two endpoints
+        r_line = cross(
+                Vec3<double>(p1->u,p1->v,p1->w),
+                Vec3<double>(p2->u,p2->v,p2->w));
+        A(r,0)=r_line[0];
+        A(r,1) = r_line[1];
+        A(r,2) = r_line[2];
+    }
+    if (lines.size()==2){
+        //3) if you only have two lines, l1 and l2, you can compute a homogeneous
+        //coordinate vector V representing their point of intersection as
+        //the cross product of these two line vectors
+        r_line = cross(
+                Vec3<double>(A(0,0),A(0,1),A(0,2)),
+                Vec3<double>(A(1,0),A(1,1),A(1,2)));
+        return SVMPoint(r_line[0]/r_line[2], r_line[1]/r_line[1]);
+    }
+    else{
+        //if you have n lines l1, l2, ..., ln, you can get the "best_fit"
+
+    }
+    //4b) perform a singular value decomposition of A
+    double mineig;
+    MinEig(A,mineig,&r_line[0]);
+    return SVMPoint(r_line[0]/r_line[2], r_line[1]/r_line[1]);
+    //printf("TODO: %s:%d\n", __FILE__, __LINE__);
     //TODO-BLOCK-END
     /******** END TODO ********/
 	
