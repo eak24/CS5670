@@ -64,7 +64,7 @@ SVMPoint BestFitIntersect(const std::list<SVMLine> &lines, int imgWidth, int img
 
     //1) specify each line's endpoints e1 and e2 in homogeneous coordinates
     struct SVMPoint *p1, *p2,t;
-    int r= 0;
+    int r= -1;
     Vec3<double> r_line;
     double * row_ptr; 
     for (std::list<SVMLine>::const_iterator i=lines.begin();i!=lines.end();i++){
