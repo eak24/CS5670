@@ -18,7 +18,7 @@ LIBS=-lfltk -lfltk_images -lpng -ljpeg -lX11 \
      -DYA_BLAS -DYA_LAPACK -DYA_BLASMULT  -lblas -llapack -framework vecLib
 else
 # Flags for Linux / Cygwin
-CPPFLAGS=-Wall -O3 `fltk-config --cflags` -I ../ -I /usr/include
+CPPFLAGS=-Wall -O3 -g `fltk-config --cflags` -I ../ -I /usr/include
 LIB_PATH=-L/usr/X11R6/lib -L/usr/lib
 LIBS= -lpng -ljpeg `fltk-config --libs --use-gl --use-glut --use-images` -lGL -lglut -lGLU -lX11 -lXft -lXinerama -lXext -ldl -lfontconfig
 endif
