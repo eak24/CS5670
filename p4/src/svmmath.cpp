@@ -98,7 +98,7 @@ SVMPoint BestFitIntersect(const std::list<SVMLine> &lines, int imgWidth, int img
     //4b) perform a singular value decomposition of A
     double mineig;
     MinEig(A,mineig,&r_line[0]);
-    return SVMPoint(r_line[0]/r_line[2], r_line[1]/r_line[1]);
+    return SVMPoint(r_line[0]/r_line[2], r_line[1]/r_line[2]);
     //printf("TODO: %s:%d\n", __FILE__, __LINE__);
     //TODO-BLOCK-END
     /******** END TODO ********/
