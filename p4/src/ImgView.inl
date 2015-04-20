@@ -48,7 +48,39 @@ void ImgView::sameXY()
 
 
     //TODO-BLOCK-BEGIN
-    printf("TODO: %s:%d\n", __FILE__, __LINE__);
+    //Compute the horizon by crossing x and y
+    SVMPoint horizon = xVanish.cross(yVanish); 
+
+    //Make a placeholder line and point
+    SVMPoint line,line2;
+    SVMPoint point;
+    //Compute the line from the reference point to the known point
+    //to the horizon
+    line = knownPoint.cross(*refPointOffPlane);
+
+    //Compute the intersection of this line with the horizon
+    point = line.cross(horizon);
+
+    //Now we compute the line from this horizon point to the new point
+    line = newPoint.cross(horizon);
+
+    //We need to find a line from the refrence point to the z vanishing point
+    line2 = zVanish.cross(*refPointOffPlane);
+
+    //Now we find the point at which these two lines intersect
+    point = line.cross(line2);
+
+    //Finally we can find the disance to the reference point
+    double distance;
+    distance = point.diff(*refPointOffPlane).mag()*referenceHeight;
+
+    newPoint.X=knownPoint.X;
+    newPoint.Y=knownPoint.Y;
+    newPoint.Z=distance;
+    
+
+    
+    //printf("TODO: %s:%d\n", __FILE__, __LINE__);
     //TODO-BLOCK-END
 	/******** END TODO ********/
 

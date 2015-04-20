@@ -92,6 +92,27 @@ struct SVMPoint
 	inline bool old_known() { return !(u==X && v==Y && Z==0); }
 	inline bool known() { return (W!=0); }
 	inline void known(bool flag) { W = flag ? 1 : 0; }
+	SVMPoint cross(struct SVMPoint &a){
+		struct SVMPoint res=SVMPoint();
+		//[0]-> u, 1-> v, 2->w
+		res.u=a.v*w - a.w*v;
+        res.v=a.w*u - a.u*w;
+        res.w = a.u*v - a.v*u;
+    
+        return res;
+	}
+	SVMPoint diff(struct SVMPoint &a){
+		struct SVMPoint res=SVMPoint();
+		//[0]-> u, 1-> v, 2->w
+		res.u=a.u-u;
+        res.v=a.v-v;
+        res.w = a.w-w;
+    
+        return res;
+	}
+	double mag(){
+		return sqrt(u*u + v*v);
+	}
 
 	//bool known; // whether the 3d coordinate is known
 };
