@@ -89,7 +89,7 @@ SVMPoint BestFitIntersect(const std::list<SVMLine> &lines, int imgWidth, int img
         r_line = cross(
                 Vec3<double>(A(0,0),A(0,1),A(0,2)),
                 Vec3<double>(A(1,0),A(1,1),A(1,2)));
-        return SVMPoint(r_line[0]/r_line[2], r_line[1]/r_line[1]);
+        return SVMPoint(r_line[0]/r_line[2], r_line[1]/r_line[2]);
     }
     else{
         //if you have n lines l1, l2, ..., ln, you can get the "best_fit"
@@ -98,6 +98,7 @@ SVMPoint BestFitIntersect(const std::list<SVMLine> &lines, int imgWidth, int img
     //4b) perform a singular value decomposition of A
     double mineig;
     MinEig(A,mineig,&r_line[0]);
+    printf("updated\n");
     return SVMPoint(r_line[0]/r_line[2], r_line[1]/r_line[2]);
     //printf("TODO: %s:%d\n", __FILE__, __LINE__);
     //TODO-BLOCK-END
