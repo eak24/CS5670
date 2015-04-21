@@ -18,6 +18,10 @@
 // HINT4: check for some helpful/necessary variables which are listed in ImgView.h such as the vanishing points and homography H
 void ImgView::sameXY()
 {
+	/*TSEARS Notes
+	What does HINT2 Mean?
+	This is incomplete, I need to project from the "reference plane" to the image plane.
+	*/
 	if (pntSelStack.size() < 2)
 	{
 		fl_alert("Not enough points on the stack.");
@@ -50,25 +54,35 @@ void ImgView::sameXY()
     //TODO-BLOCK-BEGIN
     //Compute the horizon by crossing x and y
     SVMPoint horizon = xVanish.cross(yVanish); 
+    horizon.dehomog();
 
     //Make a placeholder line and point
     SVMPoint line,line2;
     SVMPoint point;
+
+    //Compute the point on the plane below the refrence plane
+    //point = 
+
+
     //Compute the line from the reference point to the known point
     //to the horizon
     line = knownPoint.cross(*refPointOffPlane);
+    line.dehomog();
 
     //Compute the intersection of this line with the horizon
     point = line.cross(horizon);
+    point.dehomog();
 
     //Now we compute the line from this horizon point to the new point
     line = newPoint.cross(horizon);
+    line.dehomog();
 
     //We need to find a line from the refrence point to the z vanishing point
     line2 = zVanish.cross(*refPointOffPlane);
 
     //Now we find the point at which these two lines intersect
     point = line.cross(line2);
+    point.dehomog();
 
     //Finally we can find the disance to the reference point
     double distance;
@@ -77,7 +91,7 @@ void ImgView::sameXY()
     newPoint.X=knownPoint.X;
     newPoint.Y=knownPoint.Y;
     newPoint.Z=distance;
-    
+
 
     
     //printf("TODO: %s:%d\n", __FILE__, __LINE__);
