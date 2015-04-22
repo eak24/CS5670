@@ -131,7 +131,33 @@ struct SVMPoint
 	inline double reference_mag(){
 		return sqrt(X*X + Y*Y + Z*Z);
 	}
-	
+
+	inline void reference_divide(double d){
+		X/=d;
+		Y/=d;
+		Z/=d;
+		W/=d;
+	}
+	inline void reference_multiply(double d){
+		X*=d;
+		Y*=d;
+		Z*=d;
+		W*=d;
+	}
+	inline double reference_dot(struct SVMPoint &a){
+		return a.X*X + a.Y*Y+ a.Z*Z ;
+	}
+
+	inline SVMPoint reference_subtract(struct SVMPoint &a){
+		struct SVMPoint res = SVMPoint();
+		res.X = X - a.X; res.Y = Y-a.Y; res.Z = Z-a.Z; res.W = W-a.W;
+		return res;
+	} 
+	inline SVMPoint copy(struct SVMPoint &a){
+		struct SVMPoint res = SVMPoint();
+		res.X = X - a.X; res.Y = Y-a.Y; res.Z = Z-a.Z; res.W = W-a.W;
+		return res;
+	} 
 
 
 

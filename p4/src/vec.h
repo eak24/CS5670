@@ -253,6 +253,7 @@ public:
 
     double length2() const
     { return n[0]*n[0] + n[1]*n[1] + n[2]*n[2] + n[3]*n[3]; }
+
     double length() const
     { return sqrt( length2() ); }
 
@@ -646,7 +647,7 @@ inline Vec3<T> operator *(const Vec3<T>& v, Mat4<T>& a) {
     return a.transpose() * v;
 }
 
-// template <class T>
+// template <class T> double c = a*b; (a,b both vectors)
 inline double operator *(const Vec3<double>& a, const Vec3<double>& b){
     return a.n[0]*b.n[0] + a.n[1]*b.n[1] + a.n[2]*b.n[2];
 }
