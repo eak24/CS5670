@@ -58,12 +58,27 @@ void ImgView::sameXY()
 
     //Make a placeholder line and point
     SVMPoint line,line2;
-    SVMPoint point;
+    SVMPoint point,bpoint;
 
 
+    //Find the reference point on the plane
+    bpoint = *refPointOffPlane;
+    printf("refPointOffPlane x %f y %f z %f u %f v %f\n",
+    				bpoint.X,
+    				bpoint.Y,
+    				bpoint.Z,
+    				bpoint.u,
+    				bpoint.v);
+    ApplyHomography(bpoint.u, bpoint.v, H, bpoint.X/bpoint.Z, bpoint.Y/bpoint.Z, 1);
+    printf("refPointOffPlane after Homog x %f y %f z %f u %f v %f\n",
+    				bpoint.X,
+    				bpoint.Y,
+    				bpoint.Z,
+    				bpoint.u,
+    				bpoint.v);
     //Compute the line from the reference point to the known point
     //to the horizon
-    line = knownPoint.image_cross(*refPointOffPlane);
+    line = knownPoint.image_cross(bpoint);
     line.image_dehomog();
 
     //Compute the intersection of this line with the horizon
@@ -83,7 +98,9 @@ void ImgView::sameXY()
 
     //Finally we can find the disance to the reference point
     double distance;
-    distance = point.image_diff(*refPointOffPlane).image_mag()*referenceHeight;
+    distance = point.image_diff(bpoint).image_mag();
+    distance/=bpoint.image_diff(*refPointOffPlane).image_mag();
+    distance*=referenceHeight;
 
     newPoint.X=knownPoint.X;
     newPoint.Y=knownPoint.Y;
