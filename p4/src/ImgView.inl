@@ -70,12 +70,14 @@ void ImgView::sameXY()
     				bpoint.u,
     				bpoint.v);
     ApplyHomography(bpoint.u, bpoint.v, H, bpoint.X/bpoint.Z, bpoint.Y/bpoint.Z, 1);
-    printf("refPointOffPlane after Homog x %f y %f z %f u %f v %f\n",
+    printf("refPointOffPlane after Homog x %f y %f z %f u %f v %f height %f w %f\n",
     				bpoint.X,
     				bpoint.Y,
     				bpoint.Z,
     				bpoint.u,
-    				bpoint.v);
+    				bpoint.v,
+    				referenceHeight,
+    				bpoint.W);
     //Compute the line from the reference point to the known point
     //to the horizon
     line = knownPoint.image_cross(bpoint);
