@@ -124,7 +124,40 @@ void ConvertToPlaneCoordinate(const vector<SVMPoint>& points, vector<Vec3d>& bas
 
     /******** BEGIN TODO ********/
     //TODO-BLOCK-BEGIN
-    printf("TODO: %s:%d\n", __FILE__, __LINE__);
+    //Use first three points to define the coord system for the plane
+    double p = points[0];
+    double q = points[1];
+    double r = points[2];
+
+
+    //Set the r basis point as the origin for the plane
+    basisPts[2] = Vec3d(0, 0, points[2].W);
+
+    //ex, ey define the axes for the plane and s and t are the coords of q in the ex-ey plane
+    Vec3d ex = divide(subtract(p,r),mag(p,r));
+    Vec3d s = dot(subtract(q,r),ex)*ex;
+    Vec3d t = subtract(subtract(q,r),s);
+    Vec3d ex = divide(t,mag(t));
+
+
+    //Sub-routine to subtract each coord in a vec3d from another. Don't know if the syntax is right!! This seems like too much...
+    Vec3d subtract(const vector<Vec3d> p1, vector<Vec3d> p2)
+    {
+        return Vec3d(p1.X-p2.X, p1.Y-p2.Y, p1.Z-p2.Z);
+    }
+    double dot(const vector<Vec3d> p1, vector<Vec3d> p2)
+    {
+        return (p1.X*p2.X+p1.Y*p2.Y+p1.Z*p2.Z)
+    }
+    Vec3d divide(const vector<Vec3d> p, double d;)
+    {
+        return Vec3d(p.X/d, p.Y/d, p.Z/d)
+    }
+    double mag(const vector<Vec3d> p1, vector<Vec3d> p2;)
+    {
+        Vec3d d = subtract(p1,p2);
+        return sqrt(d.x**2, d.Y**2, d.Z**2)
+    }
     //TODO-BLOCK-END
     /******** END TODO ********/
 }
@@ -177,10 +210,10 @@ void ComputeHomography(CTransform3x3 &H, CTransform3x3 &Hinv, const vector<SVMPo
     //TODO-BLOCK-BEGIN
     for (int i=0; i!=(numPoints-1); i++){
         //Not sure of what to cast these to
-        float X = points[i].X;
-        float Y = points[i].Y;
-        float u = points[i].u;
-        float v = points[i].v;
+        double X = points[i].X;
+        double Y = points[i].Y;
+        double u = points[i].u;
+        double v = points[i].v;
 
         //Fill in first row and repeat
         A(2*i,0) = X;
