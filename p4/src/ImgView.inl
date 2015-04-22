@@ -53,40 +53,37 @@ void ImgView::sameXY()
 
     //TODO-BLOCK-BEGIN
     //Compute the horizon by crossing x and y
-    SVMPoint horizon = xVanish.cross(yVanish); 
-    horizon.dehomog();
+    SVMPoint horizon = xVanish.image_cross(yVanish); 
+    horizon.image_dehomog();
 
     //Make a placeholder line and point
     SVMPoint line,line2;
     SVMPoint point;
 
-    //Compute the point on the plane below the refrence plane
-    //point = 
-
 
     //Compute the line from the reference point to the known point
     //to the horizon
-    line = knownPoint.cross(*refPointOffPlane);
-    line.dehomog();
+    line = knownPoint.image_cross(*refPointOffPlane);
+    line.image_dehomog();
 
     //Compute the intersection of this line with the horizon
-    point = line.cross(horizon);
-    point.dehomog();
+    point = line.image_cross(horizon);
+    point.image_dehomog();
 
     //Now we compute the line from this horizon point to the new point
-    line = newPoint.cross(horizon);
-    line.dehomog();
+    line = newPoint.image_cross(horizon);
+    line.image_dehomog();
 
     //We need to find a line from the refrence point to the z vanishing point
-    line2 = zVanish.cross(*refPointOffPlane);
+    line2 = zVanish.image_cross(*refPointOffPlane);
 
     //Now we find the point at which these two lines intersect
-    point = line.cross(line2);
-    point.dehomog();
+    point = line.image_cross(line2);
+    point.image_dehomog();
 
     //Finally we can find the disance to the reference point
     double distance;
-    distance = point.diff(*refPointOffPlane).mag()*referenceHeight;
+    distance = point.image_diff(*refPointOffPlane).image_mag()*referenceHeight;
 
     newPoint.X=knownPoint.X;
     newPoint.Y=knownPoint.Y;
