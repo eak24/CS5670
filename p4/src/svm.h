@@ -102,6 +102,8 @@ struct SVMPoint
         return res;
 	}
 	SVMPoint diff(struct SVMPoint &a){
+		/*Returns the difference between this 
+		SVMPoint and another.*/
 		struct SVMPoint res=SVMPoint();
 		//[0]-> u, 1-> v, 2->w
 		res.u=a.u-u;
@@ -110,8 +112,15 @@ struct SVMPoint
     
         return res;
 	}
-	double mag(){
+	inline double mag(){
+		/*Return ||[u,v]||*/
 		return sqrt(u*u + v*v);
+	}
+	inline void dehomog(){
+		
+		u/=w;
+		v/=w;
+		w=1;
 	}
 
 	//bool known; // whether the 3d coordinate is known
