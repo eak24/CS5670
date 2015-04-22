@@ -92,7 +92,7 @@ struct SVMPoint
 	inline bool old_known() { return !(u==X && v==Y && Z==0); }
 	inline bool known() { return (W!=0); }
 	inline void known(bool flag) { W = flag ? 1 : 0; }
-	SVMPoint cross(struct SVMPoint &a){
+	SVMPoint image_cross(struct SVMPoint &a){
 		struct SVMPoint res=SVMPoint();
 		//[0]-> u, 1-> v, 2->w
 		res.u=a.v*w - a.w*v;
@@ -101,7 +101,7 @@ struct SVMPoint
     
         return res;
 	}
-	SVMPoint diff(struct SVMPoint &a){
+	SVMPoint image_diff(struct SVMPoint &a){
 		/*Returns the difference between this 
 		SVMPoint and another.*/
 		struct SVMPoint res=SVMPoint();
@@ -112,16 +112,29 @@ struct SVMPoint
     
         return res;
 	}
-	inline double mag(){
+	inline double image_mag(){
 		/*Return ||[u,v]||*/
 		return sqrt(u*u + v*v);
 	}
-	inline void dehomog(){
+	inline void image_dehomog(){
 		
 		u/=w;
 		v/=w;
 		w=1;
 	}
+	inline void reference_dehomog(){
+		X/=W;
+		Y/=W;
+		Z/=W;
+		W=1;
+	}
+	inline double reference_mag(){
+		return sqrt(X*X + Y*Y + Z*Z);
+	}
+	
+
+
+
 
 	//bool known; // whether the 3d coordinate is known
 };
