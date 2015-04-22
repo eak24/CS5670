@@ -173,8 +173,37 @@ void ComputeHomography(CTransform3x3 &H, CTransform3x3 &Hinv, const vector<SVMPo
 
     /******** BEGIN TODO ********/
     /* Fill in the A matrix for the call to MinEig */
+    // EKeller 4/20: should I check for isRefPlane? also, what ref points should I use?
     //TODO-BLOCK-BEGIN
-    printf("TODO: %s:%d\n", __FILE__, __LINE__);
+    for (int i=0; i!=(numPoints-1); i++){
+        //Not sure of what to cast these to
+        float X = points[i].X;
+        float Y = points[i].Y;
+        float u = points[i].u;
+        float v = points[i].v;
+
+        //Fill in first row and repeat
+        A(2*i,0) = X;
+        A(2*i,1) = Y;
+        A(2*i,2) = 1;
+        A(2*i,3) = 0;
+        A(2*i,4) = 0;
+        A(2*i,5) = 0; 
+        A(2*i,6) = -u*X; 
+        A(2*i,7) = -u*Y; 
+        A(2*i,8) = -u; 
+
+        //Fill in second row
+        A(2*i+1,0) = 0;
+        A(2*i+1,1) = 0; 
+        A(2*i+1,2) = 0; 
+        A(2*i+1,3) = X; 
+        A(2*i+1,4) = Y; 
+        A(2*i+1,5) = 1; 
+        A(2*i+1,6) = -v*X; 
+        A(2*i+1,7) = -u*Y; 
+        A(2*i+1,8) = -u; 
+    }
     //TODO-BLOCK-END
 
     double eval, h[9];
