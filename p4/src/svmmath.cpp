@@ -30,15 +30,15 @@ using namespace std;
 //		find the best fit intersection point.
 //		See http://www.cs.cornell.edu/courses/cs4670/2013fa/projects/p4/vanishing.txt
 //      Note that the "numerical conditioning" part of this description is optional, but recommended
-//	
+//
 SVMPoint BestFitIntersect(const std::list<SVMLine> &lines, int imgWidth, int imgHeight)
 {
     // check
     if (lines.size() < 2)
-	{
-            fprintf(stderr, "Not enough lines to compute the best fit.");
-            abort();
-	}
+    {
+        fprintf(stderr, "Not enough lines to compute the best fit.");
+        abort();
+    }
 
     SVMPoint bestfit;
     list<SVMLine>::const_iterator iter;
@@ -47,7 +47,7 @@ SVMPoint BestFitIntersect(const std::list<SVMLine> &lines, int imgWidth, int img
     typedef Matrix<double, Dynamic, 3, RowMajor> Matrix3;
 
     int numLines = (int) lines.size();
-    Matrix3 A = Matrix3::Zero(numLines, 3);	
+    Matrix3 A = Matrix3::Zero(numLines, 3);
 
 
     // Transformation for numerical stability
@@ -66,8 +66,8 @@ SVMPoint BestFitIntersect(const std::list<SVMLine> &lines, int imgWidth, int img
     struct SVMPoint *p1, *p2,t;
     int r= -1;
     Vec3<double> r_line;
-    double * row_ptr; 
-    for (std::list<SVMLine>::const_iterator i=lines.begin();i!=lines.end();i++){
+    double * row_ptr;
+    for (std::list<SVMLine>::const_iterator i=lines.begin(); i!=lines.end(); i++) {
         r+=1;
         p1 = i->pnt1;
         p2 = i->pnt2;
@@ -76,22 +76,22 @@ SVMPoint BestFitIntersect(const std::list<SVMLine> &lines, int imgWidth, int img
         //2) compute a homogenous coordinate vector representing the line
         //as the cross product of its two endpoints
         r_line = cross(
-                Vec3<double>(p1->u,p1->v,p1->w),
-                Vec3<double>(p2->u,p2->v,p2->w));
+                     Vec3<double>(p1->u,p1->v,p1->w),
+                     Vec3<double>(p2->u,p2->v,p2->w));
         A(r,0)=r_line[0];
         A(r,1) = r_line[1];
         A(r,2) = r_line[2];
     }
-    if (lines.size()==2){
+    if (lines.size()==2) {
         //3) if you only have two lines, l1 and l2, you can compute a homogeneous
         //coordinate vector V representing their point of intersection as
         //the cross product of these two line vectors
         r_line = cross(
-                Vec3<double>(A(0,0),A(0,1),A(0,2)),
-                Vec3<double>(A(1,0),A(1,1),A(1,2)));
+                     Vec3<double>(A(0,0),A(0,1),A(0,2)),
+                     Vec3<double>(A(1,0),A(1,1),A(1,2)));
         return SVMPoint(r_line[0]/r_line[2], r_line[1]/r_line[2]);
     }
-    else{
+    else {
         //if you have n lines l1, l2, ..., ln, you can get the "best_fit"
 
     }
@@ -103,12 +103,12 @@ SVMPoint BestFitIntersect(const std::list<SVMLine> &lines, int imgWidth, int img
     //printf("TODO: %s:%d\n", __FILE__, __LINE__);
     //TODO-BLOCK-END
     /******** END TODO ********/
-	
+
     return bestfit;
 }
 
 
- //Sub-routine to subtract each coord in a vec3d from another. Don't know if the syntax is right!! This seems like too much...
+//Sub-routine to subtract each coord in a vec3d from another. Don't know if the syntax is right!! This seems like too much...
 /*Vec3d subtract(const Vec3d p1,const Vec3d p2)
 {
     return Vec3d(p1[0]-p2[0], p1[1]-p2[1], p1[2] - p2[2]);
@@ -134,7 +134,7 @@ double mag(const Vec3d p1,const Vec3d p2)
 //		Given a plane defined by points, converts their coordinates into
 //		plane coordinates. See the following document for more detail.
 //		http://www.cs.cornell.edu/courses/cs4670/2013fa/projects/p4/homography.pdf.
-//      
+//
 //      points contains the three co-planer points which will define the desired plane
 //      basisPts should be filled with the corresponding points, now in plane coordinates
 //      The final divisors you apply to the u and v coordinates should be saved uScale and vScale
@@ -148,7 +148,7 @@ void ConvertToPlaneCoordinate(const vector<SVMPoint>& points, vector<Vec3d>& bas
     //Not sure what the uscale and vscale are for... Must more intelligently choose points!
     //Use first three points to define the coord system for the plane
 
-   // SVMPoint p =  points[0];
+    // SVMPoint p =  points[0];
     Vec3d p = Vec3d(points[0].X, points[0].Y, points[0].Z);
     //SVMPoint q = points[1];
     Vec3d q = Vec3d(points[1].X, points[1].Y, points[1].Z);
@@ -157,20 +157,20 @@ void ConvertToPlaneCoordinate(const vector<SVMPoint>& points, vector<Vec3d>& bas
 
     //ex, ey define the axes for the plane and s and t are the coords of q in the ex-ey plane
     Vec3d ex = (p-r);
-     ex.normalize();
+    ex.normalize();
     double scratch = ex * (q-r);
     Vec3d s= ex * scratch;
     Vec3d t=(q-r)-s;
     Vec3d ey  =Vec3d(t);
     t.normalize();
     Vec3d a;
-    for (int i=0; i!=(numPoints-1); i++)
+    for (int i=0; i!=(numPoints-1); i++)x
     {
         a = Vec3d(points[i].X, points[i].Y, points[i].Z);
         basisPts.push_back(Vec3d(((a-r) * ex),((a-r) * ey),1));
     }
 
-   
+
     //TODO-BLOCK-END
     /******** END TODO ********/
 }
@@ -202,7 +202,7 @@ void ComputeHomography(CTransform3x3 &H, CTransform3x3 &Hinv, const vector<SVMPo
             Vec3d tmp = Vec3d(points[i].X, points[i].Y, points[i].W); // was Z, not W
             basisPts.push_back(tmp);
         }
-    } 
+    }
     else // arbitrary polygon
     {
         double uScale, vScale; // unused in this function
@@ -221,7 +221,7 @@ void ComputeHomography(CTransform3x3 &H, CTransform3x3 &Hinv, const vector<SVMPo
     /* Fill in the A matrix for the call to MinEig */
     // EKeller 4/20: should I check for isRefPlane? also, what ref points should I use?
     //TODO-BLOCK-BEGIN
-    for (int i=0; i!=(numPoints-1); i++){
+    for (int i=0; i!=(numPoints-1); i++) {
         //Not sure of what to cast these to
         double X = points[i].X;
         double Y = points[i].Y;
@@ -234,21 +234,21 @@ void ComputeHomography(CTransform3x3 &H, CTransform3x3 &Hinv, const vector<SVMPo
         A(2*i,2) = 1;
         A(2*i,3) = 0;
         A(2*i,4) = 0;
-        A(2*i,5) = 0; 
-        A(2*i,6) = -u*X; 
-        A(2*i,7) = -u*Y; 
-        A(2*i,8) = -u; 
+        A(2*i,5) = 0;
+        A(2*i,6) = -u*X;
+        A(2*i,7) = -u*Y;
+        A(2*i,8) = -u;
 
         //Fill in second row
         A(2*i+1,0) = 0;
-        A(2*i+1,1) = 0; 
-        A(2*i+1,2) = 0; 
-        A(2*i+1,3) = X; 
-        A(2*i+1,4) = Y; 
-        A(2*i+1,5) = 1; 
-        A(2*i+1,6) = -v*X; 
-        A(2*i+1,7) = -u*Y; 
-        A(2*i+1,8) = -u; 
+        A(2*i+1,1) = 0;
+        A(2*i+1,2) = 0;
+        A(2*i+1,3) = X;
+        A(2*i+1,4) = Y;
+        A(2*i+1,5) = 1;
+        A(2*i+1,6) = -v*X;
+        A(2*i+1,7) = -u*Y;
+        A(2*i+1,8) = -u;
     }
     //TODO-BLOCK-END
 

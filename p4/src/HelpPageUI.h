@@ -9,14 +9,14 @@
 
 class HelpPageUI {
 public:
-  HelpPageUI();
-  Fl_Window *mainWindow;
-  Fl_Output *helpText;
+    HelpPageUI();
+    Fl_Window *mainWindow;
+    Fl_Output *helpText;
 private:
-  inline void cb_OK_i(Fl_Button*, void*);
-  static void cb_OK(Fl_Button*, void*);
+    inline void cb_OK_i(Fl_Button*, void*);
+    static void cb_OK(Fl_Button*, void*);
 public:
-  void show();
-  void hide();
+    void show();
+    void hide();
 };
 #endif

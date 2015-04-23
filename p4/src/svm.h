@@ -23,7 +23,7 @@
 // OpenGL
 #ifndef _WIN32
 
-#ifdef __APPLE__ 
+#ifdef __APPLE__
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
 #else // linux
@@ -63,106 +63,124 @@ class ImgView;
 
 struct SVMPoint
 {
-	//2D Homogeneous Coordinates in image plane;
-	//if w = 1, u, v, are image coordinates, ranging from 0 to imgWidth and 0 to imgHeight respectively;
-	//else if w=0 means the point is at infinity;
-	//else u/w, v/w are image coordinates.
-	
-	double u,v,w;
-	
-	//3D Homogeneous Coordinates in 3D world;
+    //2D Homogeneous Coordinates in image plane;
+    //if w = 1, u, v, are image coordinates, ranging from 0 to imgWidth and 0 to imgHeight respectively;
+    //else if w=0 means the point is at infinity;
+    //else u/w, v/w are image coordinates.
 
-	double X,Y,Z,W;
+    double u,v,w;
 
-	SVMPoint(void) //: known(false)
-	{
-		u=v=0; w=1;
-		//X=Y=Z=0; W=1;
-		X=Y=Z=W=0;
-	}
+    //3D Homogeneous Coordinates in 3D world;
 
-	SVMPoint(double u0,double v0) //: known(false)
-	{
-		u=u0;v=v0;w=1;
-		//X=u;Y=v;Z=0;W=1;
-		X=Y=Z=W=0;
-	}
+    double X,Y,Z,W;
 
-	// EUGENE_ADD
-	inline bool old_known() { return !(u==X && v==Y && Z==0); }
-	inline bool known() { return (W!=0); }
-	inline void known(bool flag) { W = flag ? 1 : 0; }
-	SVMPoint image_cross(struct SVMPoint &a){
-		struct SVMPoint res=SVMPoint();
-		//[0]-> u, 1-> v, 2->w
-		res.u=a.v*w - a.w*v;
+    SVMPoint(void) //: known(false)
+    {
+        u=v=0;
+        w=1;
+        //X=Y=Z=0; W=1;
+        X=Y=Z=W=0;
+    }
+
+    SVMPoint(double u0,double v0) //: known(false)
+    {
+        u=u0;
+        v=v0;
+        w=1;
+        //X=u;Y=v;Z=0;W=1;
+        X=Y=Z=W=0;
+    }
+
+    // EUGENE_ADD
+    inline bool old_known() {
+        return !(u==X && v==Y && Z==0);
+    }
+    inline bool known() {
+        return (W!=0);
+    }
+    inline void known(bool flag) {
+        W = flag ? 1 : 0;
+    }
+    SVMPoint image_cross(struct SVMPoint &a) {
+        struct SVMPoint res=SVMPoint();
+        //[0]-> u, 1-> v, 2->w
+        res.u=a.v*w - a.w*v;
         res.v=a.w*u - a.u*w;
         res.w = a.u*v - a.v*u;
-    
+
         return res;
-	}
-	SVMPoint image_diff(struct SVMPoint &a){
-		/*Returns the difference between this 
-		SVMPoint and another.*/
-		struct SVMPoint res=SVMPoint();
-		//[0]-> u, 1-> v, 2->w
-		res.u=u-a.u;
+    }
+    SVMPoint image_diff(struct SVMPoint &a) {
+        /*Returns the difference between this
+        SVMPoint and another.*/
+        struct SVMPoint res=SVMPoint();
+        //[0]-> u, 1-> v, 2->w
+        res.u=u-a.u;
         res.v=v-a.v;
         res.w = w-a.w;
-    
+
         return res;
-	}
-	inline double image_mag(){
-		/*Return ||[u,v]||*/
-		return sqrt(u*u + v*v);
-	}
-	inline void image_dehomog(){
-		
-		u/=w;
-		v/=w;
-		w=1;
-	}
-	inline void reference_dehomog(){
-		X/=W;
-		Y/=W;
-		Z/=W;
-		W=1;
-	}
-	inline double reference_mag(){
-		return sqrt(X*X + Y*Y + Z*Z);
-	}
+    }
+    inline double image_mag() {
+        /*Return ||[u,v]||*/
+        return sqrt(u*u + v*v);
+    }
+    inline void image_dehomog() {
 
-	inline void reference_divide(double d){
-		X/=d;
-		Y/=d;
-		Z/=d;
-		W/=d;
-	}
-	inline void reference_multiply(double d){
-		X*=d;
-		Y*=d;
-		Z*=d;
-		W*=d;
-	}
-	inline double reference_dot(struct SVMPoint &a){
-		return a.X*X + a.Y*Y+ a.Z*Z ;
-	}
+        u/=w;
+        v/=w;
+        w=1;
+    }
+    inline void reference_dehomog() {
+        X/=W;
+        Y/=W;
+        Z/=W;
+        W=1;
+    }
+    inline double reference_mag() {
+        return sqrt(X*X + Y*Y + Z*Z);
+    }
 
-	inline SVMPoint reference_subtract(struct SVMPoint &a){
-		struct SVMPoint res = SVMPoint();
-		res.X = X - a.X; res.Y = Y-a.Y; res.Z = Z-a.Z; res.W = W-a.W;
-		return res;
-	} 
-	inline SVMPoint copy(struct SVMPoint &a){
-		struct SVMPoint res = SVMPoint();
-		res.X = X ; res.Y = Y; res.Z = Z; res.W = W; res.u = u; res.v=v; res.w=w;
-		return res;
-	} 
+    inline void reference_divide(double d) {
+        X/=d;
+        Y/=d;
+        Z/=d;
+        W/=d;
+    }
+    inline void reference_multiply(double d) {
+        X*=d;
+        Y*=d;
+        Z*=d;
+        W*=d;
+    }
+    inline double reference_dot(struct SVMPoint &a) {
+        return a.X*X + a.Y*Y+ a.Z*Z ;
+    }
+
+    inline SVMPoint reference_subtract(struct SVMPoint &a) {
+        struct SVMPoint res = SVMPoint();
+        res.X = X - a.X;
+        res.Y = Y-a.Y;
+        res.Z = Z-a.Z;
+        res.W = W-a.W;
+        return res;
+    }
+    inline SVMPoint copy(struct SVMPoint &a) {
+        struct SVMPoint res = SVMPoint();
+        res.X = X ;
+        res.Y = Y;
+        res.Z = Z;
+        res.W = W;
+        res.u = u;
+        res.v=v;
+        res.w=w;
+        return res;
+    }
 
 
 
 
-	//bool known; // whether the 3d coordinate is known
+    //bool known; // whether the 3d coordinate is known
 };
 
 typedef CTypedPtrDblList<SVMPoint> PointList;
@@ -176,98 +194,98 @@ const int PARA_XY = 6;
 const int OTHER_ORIENT = 0;
 
 struct SVMLine
-{	
-	//oriention indicates whether the line is supposed to be parallel to X, Y, Z axis or just
-	//any possible orienation in 3D. orientation is one of PARA_X, PARA_Y, PARA_Z, and OTHER_ORIENT.
-	int orientation;
+{
+    //oriention indicates whether the line is supposed to be parallel to X, Y, Z axis or just
+    //any possible orienation in 3D. orientation is one of PARA_X, PARA_Y, PARA_Z, and OTHER_ORIENT.
+    int orientation;
 
-	SVMPoint *pnt1, *pnt2;
+    SVMPoint *pnt1, *pnt2;
 
-	SVMLine(void)
-	{ 
-		pnt1=pnt2=NULL; 
-	}	
-	
-	SVMLine(const SVMLine &line)
-	{ 
-		orientation = line.orientation;
-		pnt1=line.pnt1;
-		pnt2=line.pnt2;
-	}
+    SVMLine(void)
+    {
+        pnt1=pnt2=NULL;
+    }
+
+    SVMLine(const SVMLine &line)
+    {
+        orientation = line.orientation;
+        pnt1=line.pnt1;
+        pnt2=line.pnt2;
+    }
 };
 
 typedef CTypedPtrDblList<SVMLine> LineList;
 
 struct SVMRect
-{	
-	//oriention indicates whether the rect is supposed to be parallel to X, Y, Z axis or just
-	//any possible orienation in 3D. orientation is one of PARA_X, PARA_Y, PARA_Z, and OTHER_ORIENT.
-	int orientation;
+{
+    //oriention indicates whether the rect is supposed to be parallel to X, Y, Z axis or just
+    //any possible orienation in 3D. orientation is one of PARA_X, PARA_Y, PARA_Z, and OTHER_ORIENT.
+    int orientation;
 
-	SVMPoint *pnt1, *pnt2;
+    SVMPoint *pnt1, *pnt2;
 
-	SVMRect(void)
-	{ 
-		pnt1=pnt2=NULL; 
-	}	
-	
-	SVMRect(const SVMRect &rect)
-	{ 
-		orientation = rect.orientation;
-		pnt1=rect.pnt1;
-		pnt2=rect.pnt2;
-	}
+    SVMRect(void)
+    {
+        pnt1=pnt2=NULL;
+    }
+
+    SVMRect(const SVMRect &rect)
+    {
+        orientation = rect.orientation;
+        pnt1=rect.pnt1;
+        pnt2=rect.pnt2;
+    }
 };
 
 struct SVMPolygon
 {
-	bool isHomographyPopulated;
+    bool isHomographyPopulated;
 
-	// each polygon consist of a list of SVMPoint. 
-	// the pointers to the SVMPoints are saved in pntList;
-	CTypedPtrDblList <SVMPoint> pntList;
+    // each polygon consist of a list of SVMPoint.
+    // the pointers to the SVMPoints are saved in pntList;
+    CTypedPtrDblList <SVMPoint> pntList;
 
-	// the mean of all points in the list, used for polygon selection in UI;
-	double cntx, cnty;
+    // the mean of all points in the list, used for polygon selection in UI;
+    double cntx, cnty;
 
     // the orientation of the polygon
     int orientation;
 
-	// H is the homography from normalized texture image of this polygon to the original image;
-	// that is, if the INVERSE of H is applied to the image coordiates (u,v,w) in the pntList, 
-	// the result is the texture coordinates, ranging between [0,1].
-	// H is used when generating texture images from original image. 
+    // H is the homography from normalized texture image of this polygon to the original image;
+    // that is, if the INVERSE of H is applied to the image coordiates (u,v,w) in the pntList,
+    // the result is the texture coordinates, ranging between [0,1].
+    // H is used when generating texture images from original image.
 
-	// invH is the inverse matrix of H; 
-	// whenever you change H, please update invH using Matrix3by3Inv function in svmAux.h.
-	// since the texture coordinate for each points are not saved, 
-	// invH is used to convert image coordinates in pntList to texture coordinates.
-	
-	// double H[3][3],invH[3][3];
-	CTransform3x3 H, invH;
+    // invH is the inverse matrix of H;
+    // whenever you change H, please update invH using Matrix3by3Inv function in svmAux.h.
+    // since the texture coordinate for each points are not saved,
+    // invH is used to convert image coordinates in pntList to texture coordinates.
 
-	// name is the name of the polygon. name.gif willl be used as texture file name for VRML file. 
-	// you will generate name.tga as texture file in the program first. 
-	// then use your scissor program to mask the "useful" texture out.
-	// finally genertate the name.tif in photo shop based on the mask and the name.tga
-	// in name.gif, the "useful" texture should be opaque and other region should be transparent. 
+    // double H[3][3],invH[3][3];
+    CTransform3x3 H, invH;
 
-	char name[256];
+    // name is the name of the polygon. name.gif willl be used as texture file name for VRML file.
+    // you will generate name.tga as texture file in the program first.
+    // then use your scissor program to mask the "useful" texture out.
+    // finally genertate the name.tif in photo shop based on the mask and the name.tga
+    // in name.gif, the "useful" texture should be opaque and other region should be transparent.
+
+    char name[256];
 
     // boolean for whether this polygon is visible
     bool visible;
 
-	SVMPolygon(void)
-	{
+    SVMPolygon(void)
+    {
         orientation = OTHER_ORIENT;
-		// memset(H,0,sizeof(double)*9);
-		// memset(invH,0,sizeof(double)*9);
-		// H[0][0]=H[1][1]=H[2][2]=invH[0][0]=invH[1][1]=invH[2][2]=1;
-		
-		name[0]='\0';
+        // memset(H,0,sizeof(double)*9);
+        // memset(invH,0,sizeof(double)*9);
+        // H[0][0]=H[1][1]=H[2][2]=invH[0][0]=invH[1][1]=invH[2][2]=1;
+
+        name[0]='\0';
         visible = true;
-		isHomographyPopulated = false;
-	}
+        isHomographyPopulated = false;
+    }
 
     void getFourPoints(SVMPoint **p1, SVMPoint **p2, SVMPoint **p3, SVMPoint **p4)
     {
@@ -293,16 +311,16 @@ struct SVMPolygon
         SVMPoint *p;
 
         p = node->Data();
-        p1 = Vec3d(p->X, p->Y, p->Z);        
+        p1 = Vec3d(p->X, p->Y, p->Z);
         node = node->Next();
         p = node->Data();
-        p2 = Vec3d(p->X, p->Y, p->Z);        
+        p2 = Vec3d(p->X, p->Y, p->Z);
         node = node->Next();
         p = node->Data();
-        p3 = Vec3d(p->X, p->Y, p->Z);        
+        p3 = Vec3d(p->X, p->Y, p->Z);
         node = node->Next();
         p = node->Data();
-        p4 = Vec3d(p->X, p->Y, p->Z);        
+        p4 = Vec3d(p->X, p->Y, p->Z);
     }
 };
 
@@ -313,11 +331,11 @@ struct SVMSweep
     SVMPolygon *poly;
     SVMPoint *pStart;
 
-	SVMSweep(void)
-	{ 
-		poly = NULL;
-        pStart = NULL; 
-	}	
+    SVMSweep(void)
+    {
+        poly = NULL;
+        pStart = NULL;
+    }
 };
 
 

@@ -10,7 +10,7 @@
 #include <vector>
 using namespace std;
 
-#ifndef M_PI 
+#ifndef M_PI
 #define M_PI    3.1415926536
 #endif // M_PI
 
@@ -31,7 +31,7 @@ void ImgView::unwrapBoxesNormal()
         return;
     }
 
-    CTypedPtrDblElement <SVMBox> *boxNode = boxList.GetHeadPtr();    
+    CTypedPtrDblElement <SVMBox> *boxNode = boxList.GetHeadPtr();
 
     while (!boxList.IsSentinel(boxNode)) {
         SVMBox *box = boxNode->Data();
@@ -40,7 +40,7 @@ void ImgView::unwrapBoxesNormal()
         //       5
         //    2  0  3  1
         //       4
-        // 
+        //
 
         // measure the length in pixels of the first side of the first polygon
         CTypedPtrDblElement <SVMPoint> *head = box->polys[0]->pntList.GetHeadPtr();
@@ -65,20 +65,20 @@ void ImgView::unwrapBoxesNormal()
         // Create Rick's image
         CByteImage rick(imgWidth, imgHeight, 3);
 
-	    //Rick's .tga file format is in G,B,R order from bottom to top and from left to right;
-	    //our buffer is in R, G, B order from top to bottom and from left to right;
-	    for (int j=0;j<imgHeight;j++)
-	    {
-		    for (int i=0;i<imgWidth;i++)
-		    {
-			    int index = 3*(j*imgWidth+i);
-			    int x = i;
-			    int y = j;
-			    rick.Pixel(x,y,2) = imgBuf[index+0];
-			    rick.Pixel(x,y,1) = imgBuf[index+1];
-			    rick.Pixel(x,y,0) = imgBuf[index+2];
-		    }
-	    }
+        //Rick's .tga file format is in G,B,R order from bottom to top and from left to right;
+        //our buffer is in R, G, B order from top to bottom and from left to right;
+        for (int j=0; j<imgHeight; j++)
+        {
+            for (int i=0; i<imgWidth; i++)
+            {
+                int index = 3*(j*imgWidth+i);
+                int x = i;
+                int y = j;
+                rick.Pixel(x,y,2) = imgBuf[index+0];
+                rick.Pixel(x,y,1) = imgBuf[index+1];
+                rick.Pixel(x,y,0) = imgBuf[index+2];
+            }
+        }
 
         // compute the size of each face in the output image
         int w_out[6], h_out[6];
@@ -87,7 +87,7 @@ void ImgView::unwrapBoxesNormal()
             SVMPolygon *ply = box->polys[i];
             SVMPoint *p0, *p1, *p2, *p3;
             ply->getFourPoints(&p0, &p1, &p2, &p3);
-            
+
             double dx1 = p1->X - p0->X;
             double dy1 = p1->Y - p0->Y;
             double dz1 = p1->Z - p0->Z;
@@ -97,7 +97,7 @@ void ImgView::unwrapBoxesNormal()
             double dy2 = p3->Y - p0->Y;
             double dz2 = p3->Z - p0->Z;
             double dist2 = sqrt(dx2 * dx2 + dy2 * dy2 + dz2 * dz2);
-        
+
             w_out[i] = (int) ceil(dist1 * ratio);
             h_out[i] = (int) ceil(dist2 * ratio);
         }
@@ -128,23 +128,29 @@ void ImgView::unwrapBoxesNormal()
         // compute the transform for each face
         for (int i = 0; i < 6; i++) {
             SVMPolygon *ply = box->polys[i];
-            
-            CTypedPtrDblElement<SVMPoint> *selNode = ply->pntList.GetHeadPtr();
-		    vector<SVMPoint> points;
 
-		    while (!ply->pntList.IsSentinel(selNode))
-		    {
-			    points.push_back(*selNode->Data());
-			    selNode = selNode->Next();
-		    }
-    		
+            CTypedPtrDblElement<SVMPoint> *selNode = ply->pntList.GetHeadPtr();
+            vector<SVMPoint> points;
+
+            while (!ply->pntList.IsSentinel(selNode))
+            {
+                points.push_back(*selNode->Data());
+                selNode = selNode->Next();
+            }
+
             vector<Vec3d> basisPts;
-		    ComputeHomography(ply->invH, ply->H, points, basisPts, false);
-        
-	        CTransform3x3 tx;
-	        tx[0][0] = ply->invH[0][0]; tx[0][1] = ply->invH[0][1]; tx[0][2] = ply->invH[0][2];
-	        tx[1][0] = ply->invH[1][0]; tx[1][1] = ply->invH[1][1]; tx[1][2] = ply->invH[1][2];
-	        tx[2][0] = ply->invH[2][0]; tx[2][1] = ply->invH[2][1]; tx[2][2] = ply->invH[2][2];        
+            ComputeHomography(ply->invH, ply->H, points, basisPts, false);
+
+            CTransform3x3 tx;
+            tx[0][0] = ply->invH[0][0];
+            tx[0][1] = ply->invH[0][1];
+            tx[0][2] = ply->invH[0][2];
+            tx[1][0] = ply->invH[1][0];
+            tx[1][1] = ply->invH[1][1];
+            tx[1][2] = ply->invH[1][2];
+            tx[2][0] = ply->invH[2][0];
+            tx[2][1] = ply->invH[2][1];
+            tx[2][2] = ply->invH[2][2];
 
             CTransform3x3 scale;
             scale[0][0] = 1.0 / w_out[i];
@@ -154,7 +160,7 @@ void ImgView::unwrapBoxesNormal()
 
             // get the subimage for this face
             CByteImage sub = outputImg.SubImage(x_start[i], y_start[i], w_out[i], h_out[i]);
-    	    WarpGlobal(rick, sub, tx, eWarpInterpLinear);    
+            WarpGlobal(rick, sub, tx, eWarpInterpLinear);
         }
 
         char texname[256];
@@ -165,7 +171,7 @@ void ImgView::unwrapBoxesNormal()
 
         printf("Writing %s...\n", texname);
         WriteFile(outputImg, texname);
-    
+
         boxNode = boxNode->Next();
     }
 }
@@ -189,7 +195,7 @@ static double getRotation(Vec3d a, Vec3d b, Vec3d c, Vec3d d)
         return -angle;
 }
 
-void ConvertToPlaneCoordinate(SVMPolygon *ply, Vec3d &p1, Vec3d &p2, Vec3d &p3, Vec3d &p4) 
+void ConvertToPlaneCoordinate(SVMPolygon *ply, Vec3d &p1, Vec3d &p2, Vec3d &p3, Vec3d &p4)
 {
     SVMPoint *a, *b, *c, *d;
     ply->getFourPoints(&a, &b, &c, &d);
@@ -272,7 +278,7 @@ void ImgView::unwrapBoxesInverted()
         return;
     }
 
-    CTypedPtrDblElement <SVMBox> *boxNode = boxList.GetHeadPtr();    
+    CTypedPtrDblElement <SVMBox> *boxNode = boxList.GetHeadPtr();
 
     while (!boxList.IsSentinel(boxNode)) {
         SVMBox *box = boxNode->Data();
@@ -281,7 +287,7 @@ void ImgView::unwrapBoxesInverted()
         //       5
         //    2  0  3  1
         //       4
-        // 
+        //
 
         SVMPoint *p0, *p1, *p2, *p3;
         box->polys[0]->getFourPoints(&p0, &p1, &p2, &p3);
@@ -303,27 +309,27 @@ void ImgView::unwrapBoxesInverted()
         // Create Rick's image
         CByteImage rick(imgWidth, imgHeight, 4);
 
-	    //Rick's .tga file format is in G,B,R order from bottom to top and from left to right;
-	    //our buffer is in R, G, B order from top to bottom and from left to right;
-	    for (int j=0;j<imgHeight;j++)
-	    {
-		    for (int i=0;i<imgWidth;i++)
-		    {
-			    int index = 3*(j*imgWidth+i);
-			    int x = i;
-			    int y = j;
-			    rick.Pixel(x,y,2) = imgBuf[index+0];
-			    rick.Pixel(x,y,1) = imgBuf[index+1];
-			    rick.Pixel(x,y,0) = imgBuf[index+2];
-		        rick.Pixel(x,y,3) = 255;
+        //Rick's .tga file format is in G,B,R order from bottom to top and from left to right;
+        //our buffer is in R, G, B order from top to bottom and from left to right;
+        for (int j=0; j<imgHeight; j++)
+        {
+            for (int i=0; i<imgWidth; i++)
+            {
+                int index = 3*(j*imgWidth+i);
+                int x = i;
+                int y = j;
+                rick.Pixel(x,y,2) = imgBuf[index+0];
+                rick.Pixel(x,y,1) = imgBuf[index+1];
+                rick.Pixel(x,y,0) = imgBuf[index+2];
+                rick.Pixel(x,y,3) = 255;
             }
-	    }
+        }
 
         // lay out the box like this:
         //       5
         //    2  0  3  1
         //       4
-        // 
+        //
         // compute the positions of the four corners of each face in the output image (14 corners in total)
         //
         // 0 -> 0
@@ -347,7 +353,7 @@ void ImgView::unwrapBoxesInverted()
         Vec3d c0, c1, c2, c3;
         ConvertToPlaneCoordinate(box->polys[0], c0, c1, c2, c3);
 
-        // place the first four points 
+        // place the first four points
         pnts[0] = ratio * c0;
         pnts[1] = ratio * c1;
         pnts[2] = ratio * c2;
@@ -359,14 +365,15 @@ void ImgView::unwrapBoxesInverted()
         // c1 -> pnt[0], c2 -> pnt[3]
         double angle = getRotation(pnts[0], pnts[3], c1, c2);
         CTransform3x3 T1, R, T2, S;
-        S[0][0] = ratio;  S[1][1] = ratio;
+        S[0][0] = ratio;
+        S[1][1] = ratio;
         T2 = CTransform3x3::Translation((float) -c1[0], (float) -c1[1]);
         R = genRotation((float) angle);
         T1 = CTransform3x3::Translation((float) pnts[0][0], (float) pnts[0][1]);
 
         CTransform3x3 M = T1 * R * S * T2;
         X[2] = M;
-        Mat3d M2 = Mat3d(M[0][0], M[0][1], M[0][2], 
+        Mat3d M2 = Mat3d(M[0][0], M[0][1], M[0][2],
                          M[1][0], M[1][1], M[1][2],
                          M[2][0], M[2][1], M[2][2]);
 
@@ -391,10 +398,10 @@ void ImgView::unwrapBoxesInverted()
 
         M = T1 * S * R * T2;
         X[5] = M;
-        M2 = Mat3d(M[0][0], M[0][1], M[0][2], 
+        M2 = Mat3d(M[0][0], M[0][1], M[0][2],
                    M[1][0], M[1][1], M[1][2],
                    M[2][0], M[2][1], M[2][2]);
-        
+
         pnts[6] = M2 * c3;
         pnts[7] = M2 * c2;
 
@@ -410,7 +417,7 @@ void ImgView::unwrapBoxesInverted()
 
         M = T1 * S * R * T2;
         X[4] = M;
-        M2 = Mat3d(M[0][0], M[0][1], M[0][2], 
+        M2 = Mat3d(M[0][0], M[0][1], M[0][2],
                    M[1][0], M[1][1], M[1][2],
                    M[2][0], M[2][1], M[2][2]);
 
@@ -429,7 +436,7 @@ void ImgView::unwrapBoxesInverted()
 
         M = T1 * S * R * T2;
         X[3] = M;
-        M2 = Mat3d(M[0][0], M[0][1], M[0][2], 
+        M2 = Mat3d(M[0][0], M[0][1], M[0][2],
                    M[1][0], M[1][1], M[1][2],
                    M[2][0], M[2][1], M[2][2]);
 
@@ -448,7 +455,7 @@ void ImgView::unwrapBoxesInverted()
 
         M = T1 * S * R * T2;
         X[1] = M;
-        M2 = Mat3d(M[0][0], M[0][1], M[0][2], 
+        M2 = Mat3d(M[0][0], M[0][1], M[0][2],
                    M[1][0], M[1][1], M[1][2],
                    M[2][0], M[2][1], M[2][2]);
 
@@ -479,8 +486,8 @@ void ImgView::unwrapBoxesInverted()
         }
 
         // compute homographies for each image
-        int indices[6][4] = 
-        { 
+        int indices[6][4] =
+        {
             { 0, 1, 2, 3 },
             { 10, 13, 12, 11 },
             { 4, 0, 3, 5 },
@@ -523,7 +530,7 @@ void ImgView::unwrapBoxesInverted()
                 p[j][2] = points[j].w = 1.0;
             }
             ComputeHomography(Htmp, Hinvtmp, points, basisPts, false);
-        
+
             CTransform3x3 Ho2p;
             // memcpy(H[i][0], Htmp[0], 3 * sizeof(double));
             // memcpy(H[i][1], Htmp[1], 3 * sizeof(double));
@@ -554,7 +561,7 @@ void ImgView::unwrapBoxesInverted()
                 }
             }
 
-    	    WarpGlobal(rick, outputImg, H, eWarpInterpLinear);
+            WarpGlobal(rick, outputImg, H, eWarpInterpLinear);
         }
 
         char texname[256];

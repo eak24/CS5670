@@ -14,9 +14,9 @@
 //
 // TODO 9: computeCameraParameters()
 // Compute the camera position
-// EAK 4/22/15: Compute the camera Z coord with the horizon line... Use the height ref as a 
- //yardstick to measure where the horizon line comes to, like a surveyor's transit. 
-// 
+// EAK 4/22/15: Compute the camera Z coord with the horizon line... Use the height ref as a
+//yardstick to measure where the horizon line comes to, like a surveyor's transit.
+//
 void ImgView::computeCameraParameters()
 {
     if (refPointOffPlane == NULL) {
@@ -29,17 +29,17 @@ void ImgView::computeCameraParameters()
         return;
     }
 
-    // Compute the position of the camera.  You'll do this in two steps, 
+    // Compute the position of the camera.  You'll do this in two steps,
     // first finding the height of the camera, then finding the x and y coordinates
     // of the camera, as described in the project page.
 
-    /******** BEGIN TODO Part 1 ********/ 
+    /******** BEGIN TODO Part 1 ********/
     // Compute the height of the camera, store in z_cam, and the x and y coordinates of the camera,
     // storing in x_cam and y_cam
     //Homography goes from 3-d points to image plane
     double z_cam = 0.0;
     double x_cam = 0.0, y_cam = 0.0;
-    //This is cool: assume the vz is on the ref plane and compute the 
+    //This is cool: assume the vz is on the ref plane and compute the
 
     //TODO-BLOCK-BEGIN
     //Compute the horizon line
@@ -92,7 +92,7 @@ void ImgView::computeCameraParameters()
                  0.0, 1.0, 0.0, 0.0,
                  0.0, 0.0, 1.0, 0.0,
                  0.0, 0.0, 0.0, 1.0);
-    
+
     // NOTE: if you want the camera saved in the VRML file, set this to true
     // camComputed = true;
 }
@@ -100,9 +100,9 @@ void ImgView::computeCameraParameters()
 //
 // EXTRA CREDIT 10: invertScene(double zScale)
 //   "invert" the scene, creating the reverse perspective
-//   You'll need to compute the right 4x4 transformation matrix for inverting the 
+//   You'll need to compute the right 4x4 transformation matrix for inverting the
 //     scene (see webpage for more details)
-//   zScale is the factor by which you'll scale the z-direction of the inverted scene 
+//   zScale is the factor by which you'll scale the z-direction of the inverted scene
 //     (see webpage for more details)
 void ImgView::invertScene(double zScale)
 {
@@ -134,10 +134,10 @@ void ImgView::invertScene(double zScale)
 
 
     // This loop applies the matrix to each point in the scene
-	int index = 0;
+    int index = 0;
     CTypedPtrDblElement <SVMPoint> *pntNode = pntList.GetHeadPtr();
-	while (!pntList.IsSentinel(pntNode))
-	{
+    while (!pntList.IsSentinel(pntNode))
+    {
         SVMPoint *pnt = pntNode->Data();
         index++;
 
@@ -149,7 +149,7 @@ void ImgView::invertScene(double zScale)
         Vec4d p(pnt->X, pnt->Y, pnt->Z, pnt->W);
         Vec4d pNew = inv * p;
 
-        printf("inverting point %d:  %0.3f %0.3f %0.3f => %0.3f %0.3f %0.3f\n", 
+        printf("inverting point %d:  %0.3f %0.3f %0.3f => %0.3f %0.3f %0.3f\n",
                index, pnt->X, pnt->Y, pnt->Z, pNew[0] / pNew[3], pNew[1] / pNew[3], pNew[2] / pNew[3]);
 
         pnt->X = pNew[0] / pNew[3];
@@ -160,14 +160,14 @@ void ImgView::invertScene(double zScale)
         pntNode = pntNode->Next();
     }
 
-	CTypedPtrDblElement <SVMPolygon> *plyNode = plyList.GetHeadPtr();
-	// Force populate homography
-	while (!plyList.IsSentinel(plyNode)) {		
-		SVMPolygon *ply = plyNode->Data();
-		populateHomography(*ply, NULL);
-		ply->isHomographyPopulated = true;
-		plyNode=plyNode->Next();
-	}
+    CTypedPtrDblElement <SVMPolygon> *plyNode = plyList.GetHeadPtr();
+    // Force populate homography
+    while (!plyList.IsSentinel(plyNode)) {
+        SVMPolygon *ply = plyNode->Data();
+        populateHomography(*ply, NULL);
+        ply->isHomographyPopulated = true;
+        plyNode=plyNode->Next();
+    }
 
     sceneInverted = true;
 }
@@ -178,7 +178,7 @@ void ImgView::invertScene(double zScale)
 
 
 /* Use a 180 rotation to fix up the intrinsic matrix */
-void FixIntrinsics(double *P, double *K, double *R, double *t) 
+void FixIntrinsics(double *P, double *K, double *R, double *t)
 {
 #if 0
     /* Check the parity along the diagonal */
@@ -234,7 +234,7 @@ void ImgView::decomposePMatrix() {
     memcpy(KRinit + 3, camP[1], 3 * sizeof(double));
     memcpy(KRinit + 6, camP[2], 3 * sizeof(double));
 
-    dgerqf_driver(3, 3, KRinit, Kinit, Rinit);	    
+    dgerqf_driver(3, 3, KRinit, Kinit, Rinit);
 
     /* We want our intrinsics to have a certain form */
     FixIntrinsics(camP[0], Kinit, Rinit, tinit);
