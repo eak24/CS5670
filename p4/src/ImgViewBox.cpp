@@ -18,15 +18,38 @@ void ImgView::solveForOppositeCorners(double u0, double v0, double u2, double v2
 {
     /* Vanishing points must be known */
     assert(xVanish.known() && yVanish.known() && zVanish.known());    
-
-
     /******** BEGIN TODO ********/ 
     // Given the 2D positions of corners p0 and p2 of the face, compute the 2D positions of p1 and p3
     // Remember that this face is on a plane perpendicular to the plane x=0
     // Store the results in variables 'u1, v1' and 'u3, v3'
 
     //TODO-BLOCK-BEGIN
-    printf("TODO: %s:%d\n", __FILE__, __LINE__);
+    Vec3d p0 = Vec3d(u0,v0,1);
+    Vec3d p2 = Vec3d(u2,v2,1);
+    Vec3d xv = Vec3d(xVanish.u,xVanish.v,xVanish.w);
+    Vec3d zv = Vec3d(zVanish.u,zVanish.v,zVanish.w);
+    //Find the line connecting p0 and the xvanishing point
+    Vec3d bottom_base = cross(p0,xv);
+
+    //Find the line conneciing p2 and the xvanishing point
+    Vec3d top_base = cross(p2,xv);
+
+    //Find the vertical edge connecting 2 and the zvanishing point
+    Vec3d far_edge = cross(p2,zv);
+
+    //Find the vertical edge connecting 0 and the zvanishing point
+    Vec3d near_edge = cross(p0,zv);
+
+    Vec3d p1 = cross(bottom_base,far_edge);
+    Vec3d p3 = cross(top_base,near_edge);
+    p1/=p1[2];
+    p3/=p3[2];
+    u1 = p1[0];
+    v1= p1[1];
+    u3= p3[0];
+    v3 = p3[1];
+
+
     //TODO-BLOCK-END
     /********* END TODO ********/
 }
@@ -65,7 +88,27 @@ void ImgView::solveForOppositeFace(SVMSweep *sweep, double imgX, double imgY,
 	Vec3d p4, p5, p6, p7;
 
     //TODO-BLOCK-BEGIN
-    printf("TODO: %s:%d\n", __FILE__, __LINE__);
+    Vec3d xv = Vec3d(xVanish.u,xVanish.v,xVanish.w);
+    Vec3d zv = Vec3d(zVanish.u,zVanish.v,zVanish.w);
+    Vec3d yv = Vec3d(yVanish.u,yVanish.v,yVanish.w);
+    Vec3d mouse = Vec3d(imgX, imgY,1);
+    //Find p5
+    Vec3d line1 = cross(p1,yv);
+    Vec3d line2 = cross(mouse, xv);
+    p5 = cross(line1,line2);
+    //Find p4
+    line1 = cross(p0,yv);
+    line2 = cross(mouse, xv);
+    p4 = cross(line1,line2);
+    //find p7
+    line1 = cross(p4,zv);
+    line2 = cross(p3,yv);
+    p7 = cross(line1,line2);
+    //find p6
+    line1 = cross(p2,yv);
+    line2 = cross(p5,zv);
+    p6 = cross(line1,line2);
+
     //TODO-BLOCK-END
 
     /******** END TODO ********/
