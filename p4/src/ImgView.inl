@@ -74,9 +74,11 @@ void ImgView::sameXY()
     				bpoint.v,
                     bpoint.w,
                     bpoint.W);
+    printf("H\n%f %f %f\n%f %f %f\n%f %f %f\n",H[0][0],H[0][1],H[0][2],H[1][0],H[1,1],H[1,2],
+                H[2][0], H[2][1], H[2][2]);
     //bpoint.u = H[0][0] * bpoint.X+ H[0][1] * bpoint.Y;
     //bpoint.v = H[1][0] * bpoint.X + H[1][1] * bpoint.Y;
-    ApplyHomography(bpoint.u, bpoint.v, H, bpoint.X, bpoint.Y, bpoint.W);
+    ApplyHomography(bpoint.u, bpoint.v, H, bpoint.X, bpoint.Y, 1);
     printf("refPointOffPlane after Homog x %f y %f z %f u %f v %f height %f W %f w %f\n",
     				bpoint.X,
     				bpoint.Y,
@@ -95,8 +97,10 @@ void ImgView::sameXY()
     point = line.image_cross(horizon);
     point.image_dehomog();
 
+    printf("Base of reference to horizon. Intersection at %fx%f\n",point.u,point.v);
+
     //Now we compute the line from this horizon point to the new point
-    line = newPoint.image_cross(horizon);
+    line = newPoint.image_cross(point);
     line.image_dehomog();
 
     //We need to find a line from the refrence point to the z vanishing point
@@ -106,10 +110,18 @@ void ImgView::sameXY()
     point = line.image_cross(line2);
     point.image_dehomog();
 
+    printf("Intersection of line from horizon to reference line is %fx%f\n",point.u,point.v);
+
     //Finally we can find the disance to the reference point
-    double distance;
-    distance = point.image_diff(bpoint).image_mag();
-    distance/=bpoint.image_diff(*refPointOffPlane).image_mag();
+    double distance,distance2;
+    distance = (point.u-bpoint.u)*(point.u-bpoint.u) + (point.v-bpoint.v)*(point.v-bpoint.v);
+    distance = sqrt(distance); //Distance from intersection point to the ground plane
+    printf("Image distance between intersection point and ground point %f\n",distance);
+    distance2= (refPointOffPlane->u-bpoint.u)*(refPointOffPlane->u-bpoint.u) + (refPointOffPlane->v-bpoint.v)*(refPointOffPlane->v-bpoint.v);
+    distance2 = sqrt(distance2);
+    printf("Image distance between top of reference point and ground point %f\n",distance2);
+    distance/=distance2;
+    printf("ratio %f\n",distance);
     distance*=referenceHeight;
 
     newPoint.X=knownPoint.X;
