@@ -73,31 +73,48 @@ void ImgView::sameXY()
     //bpoint.u = H[0][0] * bpoint.X+ H[0][1] * bpoint.Y;
     //bpoint.v = H[1][0] * bpoint.X + H[1][1] * bpoint.Y;
     ApplyHomography(bpoint.u, bpoint.v, H, bpoint.X, bpoint.Y, 1);
+    printf("newpoint u,v %f %f , refpoint %f %f , knownPoint u,v,x,y %f %f %f %f \n",  newPoint.u,newPoint.v,
+                                                                        refPointOffPlane->u,refPointOffPlane->v,
+                                                                        knownPoint.u,knownPoint.v,
+                                                                        knownPoint.X, knownPoint.Y);
+    //line = refPointOffPlane->image_cross(zVanish);
+    //point = line.image_cross(newPoint);
 
-    line = refPointOffPlane->image_cross(zVanish);
-    point = line.image_cross(newPoint);
-    if(point.u==0 && point.v==0){
-        point = newPoint;
+    if(knownPoint.X==refPointOffPlane->X && knownPoint.Y==refPointOffPlane->Y){
+        newPoint.X=knownPoint.X/knownPoint.W;
+        newPoint.Y=knownPoint.Y/knownPoint.W;
         printf("degeneracy, newpoint is in line with the refrence point\n");
+        printf("newPoint.x newPoint.y %f %f\n",newPoint.X,newPoint.Y);
+        double distance = (newPoint.u-bpoint.u)*(newPoint.u-bpoint.u) + (newPoint.v-bpoint.v)*(newPoint.v-bpoint.v);
+        distance = sqrt(distance);
+    printf("Image distance between intersection point and ground point %f\n",distance);
+        double distance2= (refPointOffPlane->u-bpoint.u)*(refPointOffPlane->u-bpoint.u) + (refPointOffPlane->v-bpoint.v)*(refPointOffPlane->v-bpoint.v);
+        distance2 = sqrt(distance2);
+            printf("Image distance between top of reference point and ground point %f\n",distance2);
+
+        newPoint.Z = distance/distance2;
+        printf("ratio %f\n",newPoint.Z );
+        newPoint.Z *= referenceHeight;
     }
     else{
     //Make sure the known point is on the reference plane.
-    
+    printf("degeneracy test %f %f \n",point.u,point.v);
     //Should I do this?? ATTENTION
     printf("known point uv %fx%f, xyz %fx%fx%f\n",knownPoint.u,knownPoint.v,knownPoint.X,knownPoint.Y,knownPoint.Z);
     ApplyHomography(point.u,point.v,H,knownPoint.X/knownPoint.W,knownPoint.Y/knownPoint.W,1);
-    printf("point on plane after homog uv %fx%f\n",point.u,point.v);
-
+    printf("known point on plane after homog uv %fx%f\n",point.u,point.v);
+    printf("bottom of the reference point u %f %f\n", bpoint.u,bpoint.v );
     //Compute the line from the reference point to the known point
     //to the horizon
     line = point.image_cross(bpoint);
     line.image_dehomog();
+    printf("Line from reference point to known point %fx%f\n",line.u,line.v);
 
     //Compute the intersection of this line with the horizon
     point = line.image_cross(horizon);
     point.image_dehomog();
+    printf("intersection of this line with the horizon %fx%f\n",point.u,point.v);
 
-    printf("Base of reference to horizon. Intersection at %fx%f\n",point.u,point.v);
 
     //Now we compute the line from this horizon point to the new point
     line = newPoint.image_cross(point);
@@ -109,7 +126,7 @@ void ImgView::sameXY()
     //Now we find the point at which these two lines intersect
     point = line.image_cross(line2);
     point.image_dehomog();
-    }   
+    
     printf("Intersection of line from horizon to reference line is %fx%f\n",point.u,point.v);
 
     //Finally we can find the disance to the reference point
@@ -126,7 +143,7 @@ void ImgView::sameXY()
 
     newPoint.X=knownPoint.X;
     newPoint.Y=knownPoint.Y;
-    newPoint.Z=distance;
+    newPoint.Z=distance;}
 
 
     
@@ -174,22 +191,28 @@ void ImgView::sameZPlane()
     //Find the horixon based on the x and y vanishing points
     SVMPoint horizon = xVanish.image_cross(yVanish); 
     horizon.image_dehomog();
+    printf("horizon line %f %f \n",horizon.u, horizon.v );
 
     //Connect the known point and the new point
     SVMPoint line = knownPoint.image_cross(newPoint);
     line.image_dehomog();
+    printf("line from known to new %f %f \n",line.u, line.v );
+
 
     //Find the intersection of the line with the horizon
     SVMPoint horizon_intersect = horizon.image_cross(line);
     horizon_intersect.image_dehomog();
+    printf("ints with horizon %f %f \n",horizon_intersect.u, horizon_intersect.v );
 
     //Find the point on the reference plane beneath the known point
     SVMPoint bkpoint = knownPoint;
     ApplyHomography(bkpoint.u, bkpoint.v, H, bkpoint.X/bkpoint.W, bkpoint.Y/bkpoint.W, 1);
+    printf("point on r plane beneath known point%f %f \n",bkpoint.u, bkpoint.v );
 
     //Find the line going to the base
     SVMPoint line_to_base = horizon_intersect.image_cross(bkpoint);
     line_to_base.image_dehomog();
+    printf("line from horizon to point underneath known point %f %f \n",line_to_base.u, line_to_base.v );
     
     //Find a vertical line that goes through newpoint
     SVMPoint vertical_line = zVanish.image_cross(newPoint);
@@ -197,6 +220,7 @@ void ImgView::sameZPlane()
 
     //Intersect line_to_base and vertical_line
     SVMPoint bqpoint = line_to_base.image_cross(vertical_line);
+    printf("point underneath newpoint %f %f \n",bqpoint.u, bqpoint.v );
 
     ApplyHomography(newPoint.X,newPoint.Y, Hinv, bqpoint.u/bqpoint.w, bqpoint.v/bqpoint.w, 1);
 
