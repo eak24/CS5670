@@ -52,6 +52,9 @@ void ImgView::sameXY()
 
 
     //TODO-BLOCK-BEGIN
+
+    ///First comptue the homographies????
+    //ComputeHomography(H, Hinv, points, vector<Vec3d> &basisPts, bool isRefPlane)
     //Compute the horizon by crossing x and y
     SVMPoint horizon = xVanish.image_cross(yVanish); 
     horizon.image_dehomog();
@@ -63,21 +66,26 @@ void ImgView::sameXY()
 
     //Find the reference point on the plane
     bpoint = *refPointOffPlane;
-    printf("refPointOffPlane x %f y %f z %f u %f v %f\n",
+    printf("refPointOffPlane x %f y %f z %f u %f v %f w %f W %f\n ",
     				bpoint.X,
     				bpoint.Y,
     				bpoint.Z,
     				bpoint.u,
-    				bpoint.v);
-    ApplyHomography(bpoint.u, bpoint.v, H, bpoint.X/bpoint.Z, bpoint.Y/bpoint.Z, 1);
-    printf("refPointOffPlane after Homog x %f y %f z %f u %f v %f height %f w %f\n",
+    				bpoint.v,
+                    bpoint.w,
+                    bpoint.W);
+    //bpoint.u = H[0][0] * bpoint.X+ H[0][1] * bpoint.Y;
+    //bpoint.v = H[1][0] * bpoint.X + H[1][1] * bpoint.Y;
+    ApplyHomography(bpoint.u, bpoint.v, H, bpoint.X, bpoint.Y, bpoint.W);
+    printf("refPointOffPlane after Homog x %f y %f z %f u %f v %f height %f W %f w %f\n",
     				bpoint.X,
     				bpoint.Y,
     				bpoint.Z,
     				bpoint.u,
     				bpoint.v,
     				referenceHeight,
-    				bpoint.W);
+    				bpoint.W,
+                    bpoint.w);
     //Compute the line from the reference point to the known point
     //to the horizon
     line = knownPoint.image_cross(bpoint);
