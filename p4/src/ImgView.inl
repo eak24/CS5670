@@ -53,6 +53,7 @@ void ImgView::sameXY()
 
     //TODO-BLOCK-BEGIN
     //Compute the horizon by crossing x and y
+    //EAK: isn't the horizon a line? why not use SVMLine?
     SVMPoint horizon = xVanish.image_cross(yVanish); 
     horizon.image_dehomog();
 
