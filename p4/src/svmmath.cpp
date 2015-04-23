@@ -145,7 +145,9 @@ void ConvertToPlaneCoordinate(const vector<SVMPoint>& points, vector<Vec3d>& bas
 
     /******** BEGIN TODO ********/
     //TODO-BLOCK-BEGIN
+    //Not sure what the uscale and vscale are for... Must more intelligently choose points!
     //Use first three points to define the coord system for the plane
+
    // SVMPoint p =  points[0];
     Vec3d p = Vec3d(points[0].X, points[0].Y, points[0].Z);
 
@@ -154,18 +156,21 @@ void ConvertToPlaneCoordinate(const vector<SVMPoint>& points, vector<Vec3d>& bas
     //SVMPoint r = points[2];
     Vec3d r = Vec3d(points[2].X, points[2].Y, points[2].Z);
 
-
-    //Set the r basis point as the origin for the plane
-    basisPts[2] = Vec3d(0, 0, points[2].W);
+    //ex, ey define the axes for the plane and s and t are the coords of q in the ex-ey plane
     Vec3d ex = (p-r);
      ex.normalize();
     double scratch = ex * (q-r);
     Vec3d s= ex * scratch;
-
     Vec3d t=(q-r)-s;
     Vec3d ey  =Vec3d(t);
     t.normalize();
 
+    for (int i=0; i!=(numPoints-1); i++)
+    {
+        Vec3d a = Vec3d(points[i].X, points[i].Y, points[i].Z);
+        //For some reason I get the error below that ‘vec3d’ was not declared in this scope, referring to the constructor call.
+        basisPts[i] = Vec3d(((a-r) * ex),((a-r) * ey),1);
+    }
 
 /*
     //ex, ey define the axes for the plane and s and t are the coords of q in the ex-ey plane
