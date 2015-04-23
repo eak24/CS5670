@@ -85,16 +85,25 @@ void ImgView::sameXY()
         newPoint.Y=knownPoint.Y/knownPoint.W;
         printf("degeneracy, newpoint is in line with the refrence point\n");
         printf("newPoint.x newPoint.y %f %f\n",newPoint.X,newPoint.Y);
+        bpoint.image_dehomog();
         double distance = (newPoint.u-bpoint.u)*(newPoint.u-bpoint.u) + (newPoint.v-bpoint.v)*(newPoint.v-bpoint.v);
         distance = sqrt(distance);
-    printf("Image distance between intersection point and ground point %f\n",distance);
+         printf("Image distance between newpoint point and ground point %f\n",distance);
+        refPointOffPlane->image_dehomog();
         double distance2= (refPointOffPlane->u-bpoint.u)*(refPointOffPlane->u-bpoint.u) + (refPointOffPlane->v-bpoint.v)*(refPointOffPlane->v-bpoint.v);
         distance2 = sqrt(distance2);
-            printf("Image distance between top of reference point and ground point %f\n",distance2);
-
+        printf("Image distance between top of reference point and ground point %f\n",distance2);
         newPoint.Z = distance/distance2;
         printf("ratio %f\n",newPoint.Z );
         newPoint.Z *= referenceHeight;
+        printf("Newpoint.Z %f \n",newPoint.Z );
+        //Determine sign
+        line = bpoint.image_cross(xVanish);
+        line2 = newPoint.image_cross(xVanish);
+        line.image_dehomog();
+        line2.image_dehomog();
+        if ((line2.u * line.u +line2.v*line.v)>0) //newPoint is below the reference plane
+            newPoint.Z*=-1;
     }
     else{
     //Make sure the known point is on the reference plane.

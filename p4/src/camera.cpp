@@ -44,10 +44,13 @@ void ImgView::computeCameraParameters()
     //TODO-BLOCK-BEGIN
     //Compute the horizon line
     SVMPoint horizon = xVanish.image_cross(yVanish);
+    horizon.image_dehomog();
     //Compute the vz--Refpoint line
     SVMPoint refline = zVanish.image_cross(*refPointOffPlane);
+    refline.image_dehomog();
     //Compute the itersection of the two
     SVMPoint r_cross_h = refline.image_cross(horizon);
+    r_cross_h.image_dehomog();
     //Push the intersection point and the ref point onto the stack
     pntSelStack.push_back(refPointOffPlane);
     pntSelStack.push_back(&r_cross_h);
@@ -57,7 +60,7 @@ void ImgView::computeCameraParameters()
     pntSelStack.pop_back();
 
     //Initialize the point that is the projection of refPointOffPlane to the ref plane
-    SVMPoint rproj = *refPointOffPlane;
+    /*SVMPoint rproj = *refPointOffPlane;
     rproj.Z = 1;
     //Find the projection of r onto the ref plane in img coord. by applying the homography
     //ApplyHomography(rproj.u, rproj.v, H, refPointOffPlane->X/refPointOffPlane->W, refPointOffPlane->Y/refPointOffPlane->W, 1);
@@ -71,14 +74,16 @@ void ImgView::computeCameraParameters()
     z_cam = r_cross_h.Z; x_cam = zVanish.X; y_cam = zVanish.Y;
     //pop back all used points
     pntSelStack.pop_back();
-    pntSelStack.pop_back();
+    pntSelStack.pop_back();*/
+    SVMPoint c0 = zVanish;
+    ApplyHomography(c0.X,c0.Y, Hinv, zVanish.u/zVanish.w, zVanish.v/zVanish.w, 1);
     //TODO-BLOCK-END
 
     /******** END TODO Part 1 ********/
 
-    camPos[0] = x_cam;
-    camPos[1] = y_cam;
-    camPos[2] = z_cam;
+    camPos[0] = c0.X;
+    camPos[1] = c0.Y;
+    camPos[2] = r_cross_h.Z;
 
     printf("Camera is at [ %0.3f %0.3f %0.3f ]\n", camPos[0], camPos[1], camPos[2]);
 

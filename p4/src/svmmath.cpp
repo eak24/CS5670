@@ -163,10 +163,10 @@ void ConvertToPlaneCoordinate(const vector<SVMPoint>& points, vector<Vec3d>& bas
     Vec3d t=(q-r)-s;
     Vec3d ey  =Vec3d(t);
     t.normalize();
-
+    Vec3d a;
     for (int i=0; i!=(numPoints-1); i++)
     {
-        Vec3d a = Vec3d(points[i].X, points[i].Y, points[i].Z);
+        a = Vec3d(points[i].X, points[i].Y, points[i].Z);
         basisPts[i] = Vec3d(((a-r) * ex),((a-r) * ey),1);
     }
 
