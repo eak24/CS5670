@@ -189,6 +189,7 @@ void ImgView::sameZPlane()
     //Find the line going to the base
     SVMPoint line_to_base = horizon_intersect.image_cross(bkpoint);
     line_to_base.image_dehomog();
+    
     //Find a vertical line that goes through newpoint
     SVMPoint vertical_line = zVanish.image_cross(newPoint);
     vertical_line.image_dehomog();
