@@ -19,8 +19,9 @@
 void ImgView::sameXY()
 {
 	/*TSEARS Notes
-	What does HINT2 Mean?
-	This is incomplete, I need to project from the "reference plane" to the image plane.
+	What does HINT2 Mean? Maybe done
+    Am I gaurunteed that knownpoint is on the reference plane?
+    Please look at the line marked ATTENTION
 	*/
 	if (pntSelStack.size() < 2)
 	{
@@ -76,12 +77,19 @@ void ImgView::sameXY()
     point = line.image_cross(newPoint);
     if(point.u==0 && point.v==0){
         point = newPoint;
-        printf("degeneracy, newpoint is in line with the refrence point");
+        printf("degeneracy, newpoint is in line with the refrence point\n");
     }
     else{
+    //Make sure the known point is on the reference plane.
+    
+    //Should I do this?? ATTENTION
+    printf("known point uv %fx%f, xyz %fx%fx%f\n",knownPoint.u,knownPoint.v,knownPoint.X,knownPoint.Y,knownPoint.Z);
+    ApplyHomography(point.u,point.v,H,knownPoint.X/knownPoint.W,knownPoint.Y/knownPoint.W,1);
+    printf("point on plane after homog uv %fx%f\n",point.u,point.v);
+
     //Compute the line from the reference point to the known point
     //to the horizon
-    line = knownPoint.image_cross(bpoint);
+    line = point.image_cross(bpoint);
     line.image_dehomog();
 
     //Compute the intersection of this line with the horizon
@@ -162,7 +170,36 @@ void ImgView::sameZPlane()
 
 	/******** BEGIN TODO ********/
     //TODO-BLOCK-BEGIN
-    printf("TODO: %s:%d\n", __FILE__, __LINE__);
+    //Find the horixon based on the x and y vanishing points
+    SVMPoint horizon = xVanish.image_cross(yVanish); 
+    horizon.image_dehomog();
+
+    //Connect the known point and the new point
+    SVMPoint line = knownPoint.image_cross(newPoint);
+    line.image_dehomog();
+
+    //Find the intersection of the line with the horizon
+    SVMPoint horizon_intersect = horizon.image_cross(line);
+    horizon_intersect.image_dehomog();
+
+    //Find the point on the reference plane beneath the known point
+    SVMPoint bkpoint = knownPoint;
+    ApplyHomography(bkpoint.u, bkpoint.v, H, bkpoint.X/bkpoint.W, bkpoint.Y/bkpoint.W, 1);
+
+    //Find the line going to the base
+    SVMPoint line_to_base = horizon_intersect.image_cross(bkpoint);
+    line_to_base.image_dehomog();
+    //Find a vertical line that goes through newpoint
+    SVMPoint vertical_line = zVanish.image_cross(newPoint);
+    vertical_line.image_dehomog();
+
+    //Intersect line_to_base and vertical_line
+    SVMPoint bqpoint = line_to_base.image_cross(vertical_line);
+
+    ApplyHomography(newPoint.X,newPoint.Y, Hinv, bqpoint.u/bqpoint.w, bqpoint.v/bqpoint.w, 1);
+
+    newPoint.Z = knownPoint.Z;
+
     //TODO-BLOCK-END
 	/******** END TODO ********/
 
