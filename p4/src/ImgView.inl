@@ -66,28 +66,19 @@ void ImgView::sameXY()
 
     //Find the reference point on the plane
     bpoint = *refPointOffPlane;
-    printf("refPointOffPlane x %f y %f z %f u %f v %f w %f W %f\n ",
-    				bpoint.X,
-    				bpoint.Y,
-    				bpoint.Z,
-    				bpoint.u,
-    				bpoint.v,
-                    bpoint.w,
-                    bpoint.W);
-    printf("H\n%f %f %f\n%f %f %f\n%f %f %f\n",H[0][0],H[0][1],H[0][2],H[1][0],H[1,1],H[1,2],
-                H[2][0], H[2][1], H[2][2]);
+
+
     //bpoint.u = H[0][0] * bpoint.X+ H[0][1] * bpoint.Y;
     //bpoint.v = H[1][0] * bpoint.X + H[1][1] * bpoint.Y;
     ApplyHomography(bpoint.u, bpoint.v, H, bpoint.X, bpoint.Y, 1);
-    printf("refPointOffPlane after Homog x %f y %f z %f u %f v %f height %f W %f w %f\n",
-    				bpoint.X,
-    				bpoint.Y,
-    				bpoint.Z,
-    				bpoint.u,
-    				bpoint.v,
-    				referenceHeight,
-    				bpoint.W,
-                    bpoint.w);
+
+    line = refPointOffPlane->image_cross(zVanish);
+    point = line.image_cross(newPoint);
+    if(point.u==0 && point.v==0){
+        point = newPoint;
+        printf("degeneracy, newpoint is in line with the refrence point");
+    }
+    else{
     //Compute the line from the reference point to the known point
     //to the horizon
     line = knownPoint.image_cross(bpoint);
@@ -109,7 +100,7 @@ void ImgView::sameXY()
     //Now we find the point at which these two lines intersect
     point = line.image_cross(line2);
     point.image_dehomog();
-
+    }   
     printf("Intersection of line from horizon to reference line is %fx%f\n",point.u,point.v);
 
     //Finally we can find the disance to the reference point
