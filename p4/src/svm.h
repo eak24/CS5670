@@ -106,9 +106,9 @@ struct SVMPoint
 		SVMPoint and another.*/
 		struct SVMPoint res=SVMPoint();
 		//[0]-> u, 1-> v, 2->w
-		res.u=a.u-u;
-        res.v=a.v-v;
-        res.w = a.w-w;
+		res.u=u-a.u;
+        res.v=v-a.v;
+        res.w = w-a.w;
     
         return res;
 	}
@@ -155,7 +155,7 @@ struct SVMPoint
 	} 
 	inline SVMPoint copy(struct SVMPoint &a){
 		struct SVMPoint res = SVMPoint();
-		res.X = X - a.X; res.Y = Y-a.Y; res.Z = Z-a.Z; res.W = W-a.W;
+		res.X = X ; res.Y = Y; res.Z = Z; res.W = W; res.u = u; res.v=v; res.w=w;
 		return res;
 	} 
 

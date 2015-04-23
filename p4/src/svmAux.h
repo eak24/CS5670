@@ -44,6 +44,7 @@ inline void ApplyHomography(double &u, double &v, const CTransform3x3 &H, double
     v /= w;
 }
 
+
 inline void Matrix3by3Inv(double invM[3][3], const double m[3][3])
 {
     int i, j, k;
