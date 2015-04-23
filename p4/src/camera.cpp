@@ -14,6 +14,9 @@
 //
 // TODO 9: computeCameraParameters()
 // Compute the camera position
+// EAK 4/22/15: Compute the camera Z coord with the horizon line... Use the height ref as a 
+ //yardstick to measure where the horizon line comes to, like a surveyor's transit. 
+// 
 void ImgView::computeCameraParameters()
 {
     if (refPointOffPlane == NULL) {
@@ -33,11 +36,41 @@ void ImgView::computeCameraParameters()
     /******** BEGIN TODO Part 1 ********/ 
     // Compute the height of the camera, store in z_cam, and the x and y coordinates of the camera,
     // storing in x_cam and y_cam
+    //Homography goes from 3-d points to image plane
     double z_cam = 0.0;
     double x_cam = 0.0, y_cam = 0.0;
+    //This is cool: assume the vz is on the ref plane and compute the 
 
     //TODO-BLOCK-BEGIN
-    printf("TODO: %s:%d\n", __FILE__, __LINE__);
+    //Compute the horizon line
+    SVMPoint horizon = xVanish.image_cross(yVanish);
+    //Compute the vz--Refpoint line
+    SVMPoint refline = zVanish.image_cross(*refPointOffPlane);
+    //Compute the itersection of the two
+    SVMPoint r_cross_h = refline.image_cross(horizon);
+    //Push the intersection point and the ref point onto the stack
+    pntSelStack.push_back(refPointOffPlane);
+    pntSelStack.push_back(&r_cross_h);
+    //Return the Z value of the sameXY of the intersection point with the ref point
+    sameXY();
+    pntSelStack.pop_back();
+    pntSelStack.pop_back();
+
+    //Initialize the point that is the projection of refPointOffPlane to the ref plane
+    SVMPoint rproj = *refPointOffPlane;
+    rproj.Z = 0;
+    //Find the projection of r onto the ref plane in img coord. by applying the homography
+    ApplyHomography(rproj.u, rproj.v, H, refPointOffPlane->X/refPointOffPlane->W, refPointOffPlane->Y/refPointOffPlane->W, 1);
+    //Push r-proj and vz onto the stacke
+    pntSelStack.push_back(&rproj);
+    pntSelStack.push_back(&zVanish);
+    //Take the sameZ of the two to find where vz projects through the ground plane
+    sameZPlane();
+    //Return those as the X and Y coordinates of the camera
+    z_cam = r_cross_h.Z; x_cam = zVanish.X; y_cam = zVanish.Y;
+    //pop back all used points
+    pntSelStack.pop_back();
+    pntSelStack.pop_back();
     //TODO-BLOCK-END
 
     /******** END TODO Part 1 ********/

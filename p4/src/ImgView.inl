@@ -57,6 +57,7 @@ void ImgView::sameXY()
     ///First comptue the homographies????
     //ComputeHomography(H, Hinv, points, vector<Vec3d> &basisPts, bool isRefPlane)
     //Compute the horizon by crossing x and y
+    //EAK: isn't the horizon a line? why not use SVMLine?
     SVMPoint horizon = xVanish.image_cross(yVanish); 
     horizon.image_dehomog();
 
