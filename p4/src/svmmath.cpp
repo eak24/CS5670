@@ -167,7 +167,7 @@ void ConvertToPlaneCoordinate(const vector<SVMPoint>& points, vector<Vec3d>& bas
     for (int i=0; i!=(numPoints-1); i++)
     {
         a = Vec3d(points[i].X, points[i].Y, points[i].Z);
-        basisPts[i] = Vec3d(((a-r) * ex),((a-r) * ey),1);
+        basisPts.push_back(Vec3d(((a-r) * ex),((a-r) * ey),1));
     }
 
    
