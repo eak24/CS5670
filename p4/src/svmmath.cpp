@@ -150,7 +150,6 @@ void ConvertToPlaneCoordinate(const vector<SVMPoint>& points, vector<Vec3d>& bas
 
    // SVMPoint p =  points[0];
     Vec3d p = Vec3d(points[0].X, points[0].Y, points[0].Z);
-
     //SVMPoint q = points[1];
     Vec3d q = Vec3d(points[1].X, points[1].Y, points[1].Z);
     //SVMPoint r = points[2];
@@ -168,21 +167,8 @@ void ConvertToPlaneCoordinate(const vector<SVMPoint>& points, vector<Vec3d>& bas
     for (int i=0; i!=(numPoints-1); i++)
     {
         Vec3d a = Vec3d(points[i].X, points[i].Y, points[i].Z);
-        //For some reason I get the error below that ‘vec3d’ was not declared in this scope, referring to the constructor call.
         basisPts[i] = Vec3d(((a-r) * ex),((a-r) * ey),1);
     }
-
-/*
-    //ex, ey define the axes for the plane and s and t are the coords of q in the ex-ey plane
-    SVMPoint ex = p.reference_subtract(r)
-    ex.reference_divide(ex.reference_mag()); //ex = p-r/||p-r}}
-
-    SVMPoint s = ex.copy();
-    s.reference_multiply(ex.reference_dot(q.reference_subtract(r))); //s=ex dot (q-r) * ex
-    SVMPoint t = (q.reference_subtract(r)).reference_subtract(s)// t = (q-r)-s
-    SVMPoint ey =t.copy();
-    ey.reference_divide(ey.reference_mag()); // ey = t/||t||
-*/
 
    
     //TODO-BLOCK-END
