@@ -58,9 +58,10 @@ void ImgView::computeCameraParameters()
 
     //Initialize the point that is the projection of refPointOffPlane to the ref plane
     SVMPoint rproj = *refPointOffPlane;
-    rproj.Z = 0;
+    rproj.Z = 1;
     //Find the projection of r onto the ref plane in img coord. by applying the homography
-    ApplyHomography(rproj.u, rproj.v, H, refPointOffPlane->X/refPointOffPlane->W, refPointOffPlane->Y/refPointOffPlane->W, 1);
+    //ApplyHomography(rproj.u, rproj.v, H, refPointOffPlane->X/refPointOffPlane->W, refPointOffPlane->Y/refPointOffPlane->W, 1);
+    ApplyHomography(rproj.u, rproj.v, H, refPointOffPlane->X, refPointOffPlane->Y, 1);
     //Push r-proj and vz onto the stacke
     pntSelStack.push_back(&rproj);
     pntSelStack.push_back(&zVanish);
