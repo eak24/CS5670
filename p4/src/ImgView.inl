@@ -16,6 +16,8 @@
 // HINT2: there is a degeneracy that you should look out for involving points already in line with the reference
 // HINT3: make sure to get the sign of the result right, i.e. whether it is above or below ground
 // HINT4: check for some helpful/necessary variables which are listed in ImgView.h such as the vanishing points and homography H
+#define PROJECT_KNOWN_POINT 0
+
 void ImgView::sameXY()
 {
     /*TSEARS Notes
@@ -81,9 +83,9 @@ void ImgView::sameXY()
     //point = line.image_cross(newPoint);
 
     if(knownPoint.X==refPointOffPlane->X && knownPoint.Y==refPointOffPlane->Y) {
+        printf("degeneracy, newpoint is in line with the refrence point\n");
         newPoint.X=knownPoint.X/knownPoint.W;
         newPoint.Y=knownPoint.Y/knownPoint.W;
-        printf("degeneracy, newpoint is in line with the refrence point\n");
         printf("newPoint.x newPoint.y %f %f\n",newPoint.X,newPoint.Y);
         bpoint.image_dehomog();
         double distance = (newPoint.u-bpoint.u)*(newPoint.u-bpoint.u) + (newPoint.v-bpoint.v)*(newPoint.v-bpoint.v);
@@ -97,6 +99,7 @@ void ImgView::sameXY()
         printf("ratio %f\n",newPoint.Z );
         newPoint.Z *= referenceHeight;
         printf("Newpoint.Z %f \n",newPoint.Z );
+
         //Determine sign
         line = bpoint.image_cross(xVanish);
         line2 = newPoint.image_cross(xVanish);
@@ -109,10 +112,15 @@ void ImgView::sameXY()
         //Make sure the known point is on the reference plane.
         printf("degeneracy test %f %f \n",point.u,point.v);
         //Should I do this?? ATTENTION
-        printf("known point uv %fx%f, xyz %fx%fx%f\n",knownPoint.u,knownPoint.v,knownPoint.X,knownPoint.Y,knownPoint.Z);
-        ApplyHomography(point.u,point.v,H,knownPoint.X/knownPoint.W,knownPoint.Y/knownPoint.W,1);
-        printf("known point on plane after homog uv %fx%f\n",point.u,point.v);
-        printf("bottom of the reference point u %f %f\n", bpoint.u,bpoint.v );
+        if (knownPoint.Z!=0) {
+            printf("known point uv %fx%f, xyz %fx%fx%f\n",knownPoint.u,knownPoint.v,knownPoint.X,knownPoint.Y,knownPoint.Z);
+            ApplyHomography(point.u,point.v,H,knownPoint.X/knownPoint.W,knownPoint.Y/knownPoint.W,1);
+            printf("known point on plane after homog uv %fx%f\n",point.u,point.v);
+            printf("bottom of the reference point u %f %f\n", bpoint.u,bpoint.v );
+        }
+        else {
+            point=knownPoint;
+        }
         //Compute the line from the reference point to the known point
         //to the horizon
         line = point.image_cross(bpoint);
@@ -131,6 +139,7 @@ void ImgView::sameXY()
 
         //We need to find a line from the refrence point to the z vanishing point
         line2 = zVanish.image_cross(*refPointOffPlane);
+        line2.image_dehomog();
 
         //Now we find the point at which these two lines intersect
         point = line.image_cross(line2);
@@ -149,10 +158,16 @@ void ImgView::sameXY()
         distance/=distance2;
         printf("ratio %f\n",distance);
         distance*=referenceHeight;
-
         newPoint.X=knownPoint.X;
         newPoint.Y=knownPoint.Y;
         newPoint.Z=distance;
+        //Determine sign
+        line = bpoint.image_cross(xVanish);
+        line2 = newPoint.image_cross(xVanish);
+        line.image_dehomog();
+        line2.image_dehomog();
+        if ((line2.u * line.u +line2.v*line.v)>0) //newPoint is below the reference plane
+            newPoint.Z*=-1;
     }
 
 

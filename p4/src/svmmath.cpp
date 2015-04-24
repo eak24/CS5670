@@ -93,7 +93,6 @@ SVMPoint BestFitIntersect(const std::list<SVMLine> &lines, int imgWidth, int img
     }
     else {
         //if you have n lines l1, l2, ..., ln, you can get the "best_fit"
-
     }
     //4b) perform a singular value decomposition of A
     double mineig;
@@ -108,25 +107,6 @@ SVMPoint BestFitIntersect(const std::list<SVMLine> &lines, int imgWidth, int img
 }
 
 
-//Sub-routine to subtract each coord in a vec3d from another. Don't know if the syntax is right!! This seems like too much...
-/*Vec3d subtract(const Vec3d p1,const Vec3d p2)
-{
-    return Vec3d(p1[0]-p2[0], p1[1]-p2[1], p1[2] - p2[2]);
-}
-double dot(const Vec3d p1,const Vec3d p2)
-{
-    return (p1[0]*p2[0]+p1[1]*p2[1]+p1[2]*p2[2]);
-}
-Vec3d divide(const Vec3d p, double d)
-{
-    return Vec3d(p[0]/d, p[1]/d, p[2]/d);
-}
-double mag(const Vec3d p1,const Vec3d p2)
-{
-    Vec3d d = subtract(p1,p2);
-    return sqrt(d[0]*d[0]+ d[1]*d[1]+d[2]*d[2]);
-}
-*/
 
 
 //
@@ -164,7 +144,7 @@ void ConvertToPlaneCoordinate(const vector<SVMPoint>& points, vector<Vec3d>& bas
     Vec3d ey  =Vec3d(t);
     t.normalize();
     Vec3d a;
-    for (int i=0; i!=(numPoints-1); i++)x
+    for (int i=0; i!=(numPoints-1); i++)
     {
         a = Vec3d(points[i].X, points[i].Y, points[i].Z);
         basisPts.push_back(Vec3d(((a-r) * ex),((a-r) * ey),1));
@@ -221,7 +201,7 @@ void ComputeHomography(CTransform3x3 &H, CTransform3x3 &Hinv, const vector<SVMPo
     /* Fill in the A matrix for the call to MinEig */
     // EKeller 4/20: should I check for isRefPlane? also, what ref points should I use?
     //TODO-BLOCK-BEGIN
-    for (int i=0; i!=(numPoints-1); i++) {
+    for (int i=0; i<numPoints; i++) {
         //Not sure of what to cast these to
         double X = points[i].X;
         double Y = points[i].Y;
@@ -247,8 +227,8 @@ void ComputeHomography(CTransform3x3 &H, CTransform3x3 &Hinv, const vector<SVMPo
         A(2*i+1,4) = Y;
         A(2*i+1,5) = 1;
         A(2*i+1,6) = -v*X;
-        A(2*i+1,7) = -u*Y;
-        A(2*i+1,8) = -u;
+        A(2*i+1,7) = -v*Y;
+        A(2*i+1,8) = -v;
     }
     //TODO-BLOCK-END
 
