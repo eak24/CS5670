@@ -20,6 +20,7 @@
 
 void ImgView::sameXY()
 {
+    computeVanishingPoints();//TSears
     /*TSEARS Notes
     What does HINT2 Mean? Maybe done
     Am I gaurunteed that knownpoint is on the reference plane?
@@ -89,10 +90,12 @@ void ImgView::sameXY()
         printf("newPoint.x newPoint.y %f %f\n",newPoint.X,newPoint.Y);
         bpoint.image_dehomog();
         double distance = (newPoint.u-bpoint.u)*(newPoint.u-bpoint.u) + (newPoint.v-bpoint.v)*(newPoint.v-bpoint.v);
+        distance *= (refPointOffPlane->u-zVanish.u)*(refPointOffPlane->u-zVanish.u) + (refPointOffPlane->v-zVanish.v)*(refPointOffPlane->v-zVanish.v);
         distance = sqrt(distance);
         printf("Image distance between newpoint point and ground point %f\n",distance);
         refPointOffPlane->image_dehomog();
         double distance2= (refPointOffPlane->u-bpoint.u)*(refPointOffPlane->u-bpoint.u) + (refPointOffPlane->v-bpoint.v)*(refPointOffPlane->v-bpoint.v);
+        distance2 *= (newPoint.u-zVanish.u)*(newPoint.u-zVanish.u) + (newPoint.v-zVanish.v)*(newPoint.v-zVanish.v);
         distance2 = sqrt(distance2);
         printf("Image distance between top of reference point and ground point %f\n",distance2);
         newPoint.Z = distance/distance2;
@@ -110,7 +113,7 @@ void ImgView::sameXY()
     }
     else {
         //Make sure the known point is on the reference plane.
-        printf("degeneracy test %f %f \n",point.u,point.v);
+        //printf("degeneracy test %f %f \n",point.u,point.v);
         //Should I do this?? ATTENTION
         if (knownPoint.Z!=0) {
             printf("known point uv %fx%f, xyz %fx%fx%f\n",knownPoint.u,knownPoint.v,knownPoint.X,knownPoint.Y,knownPoint.Z);
@@ -150,9 +153,11 @@ void ImgView::sameXY()
         //Finally we can find the disance to the reference point
         double distance,distance2;
         distance = (point.u-bpoint.u)*(point.u-bpoint.u) + (point.v-bpoint.v)*(point.v-bpoint.v);
+        distance *= (refPointOffPlane->u-zVanish.u)*(refPointOffPlane->u-zVanish.u) + (refPointOffPlane->v-zVanish.v)*(refPointOffPlane->v-zVanish.v);
         distance = sqrt(distance); //Distance from intersection point to the ground plane
         printf("Image distance between intersection point and ground point %f\n",distance);
         distance2= (refPointOffPlane->u-bpoint.u)*(refPointOffPlane->u-bpoint.u) + (refPointOffPlane->v-bpoint.v)*(refPointOffPlane->v-bpoint.v);
+        distance2 *= (point.u-zVanish.u)*(point.u-zVanish.u) + (point.v-zVanish.v)*(point.v-zVanish.v);
         distance2 = sqrt(distance2);
         printf("Image distance between top of reference point and ground point %f\n",distance2);
         distance/=distance2;
@@ -196,6 +201,7 @@ void ImgView::sameXY()
 //       (in addition to the known 3D location of knownPoint, and the 2D location of newPoint)
 void ImgView::sameZPlane()
 {
+        computeVanishingPoints();//TSears
     if (pntSelStack.size() < 2)
     {
         fl_alert("Not enough points on the stack.");

@@ -119,6 +119,7 @@ SVMPoint BestFitIntersect(const std::list<SVMLine> &lines, int imgWidth, int img
 //      basisPts should be filled with the corresponding points, now in plane coordinates
 //      The final divisors you apply to the u and v coordinates should be saved uScale and vScale
 //
+#define HUGENUMBER 1.0e20
 void ConvertToPlaneCoordinate(const vector<SVMPoint>& points, vector<Vec3d>& basisPts, double &uScale, double &vScale)
 {
     int numPoints = points.size();
@@ -131,9 +132,24 @@ void ConvertToPlaneCoordinate(const vector<SVMPoint>& points, vector<Vec3d>& bas
     // SVMPoint p =  points[0];
     Vec3d p = Vec3d(points[0].X, points[0].Y, points[0].Z);
     //SVMPoint q = points[1];
-    Vec3d q = Vec3d(points[1].X, points[1].Y, points[1].Z);
+    Vec3d r = Vec3d(points[1].X, points[1].Y, points[1].Z);
     //SVMPoint r = points[2];
-    Vec3d r = Vec3d(points[2].X, points[2].Y, points[2].Z);
+    double best_cosine =  1;
+    double cosine;
+    Vec3d q=Vec3d(points[2].X,points[2].Y,points[2].Z);
+    Vec3d line = p-r;
+    line.normalize();
+    for (int i =2; i<points.size(); i++){
+        Vec3d t=(Vec3d(points[i].X,points[i].Y,points[i].Z)-r);
+        t.normalize();
+        cosine = abs(t*line);
+        if (cosine<best_cosine){
+            best_cosine = cosine;
+            q=Vec3d(points[i].X,points[i].Y,points[i].Z);
+
+        }
+    }
+
 
     //ex, ey define the axes for the plane and s and t are the coords of q in the ex-ey plane
     Vec3d ex = (p-r);
@@ -141,15 +157,31 @@ void ConvertToPlaneCoordinate(const vector<SVMPoint>& points, vector<Vec3d>& bas
     double scratch = ex * (q-r);
     Vec3d s= ex * scratch;
     Vec3d t=(q-r)-s;
-    Vec3d ey  =Vec3d(t);
     t.normalize();
-    Vec3d a;
-    for (int i=0; i!=(numPoints-1); i++)
+    Vec3d ey  =Vec3d(t);
+    Vec3d a,b;
+    for (int i=0; i<numPoints; i++)
     {
         a = Vec3d(points[i].X, points[i].Y, points[i].Z);
         basisPts.push_back(Vec3d(((a-r) * ex),((a-r) * ey),1));
     }
+    double umax,vmax = -HUGENUMBER;
+    double umin, vmin = HUGENUMBER;
+    for (int i=0; i<numPoints; i++){
+        umin = min(basisPts[i][0],umin);
+        vmin = min(basisPts[i][1],vmin);
+        umax = max(basisPts[i][0],umax);
+        vmax = max(basisPts[i][1],vmax);
+    }
 
+    uScale = umax-umin;
+    vScale = vmax-vmin;
+    for (int i=0; i<numPoints; i++){
+        basisPts[i][0]-=umin;
+        basisPts[i][0]/=uScale;
+        basisPts[i][1]-=vmin;
+        basisPts[i][1]/=vScale;
+    }
 
     //TODO-BLOCK-END
     /******** END TODO ********/
@@ -171,6 +203,7 @@ void ConvertToPlaneCoordinate(const vector<SVMPoint>& points, vector<Vec3d>& bas
 //
 void ComputeHomography(CTransform3x3 &H, CTransform3x3 &Hinv, const vector<SVMPoint> &points, vector<Vec3d> &basisPts, bool isRefPlane)
 {
+    //computeVanishingPoints();//TSears
     int i;
     int numPoints = (int) points.size();
     assert( numPoints >= 4 );
