@@ -1,3 +1,5 @@
 *.o
 *.tga
 *.pyc
+*/cs4670/datasets/*
+*.jpg
