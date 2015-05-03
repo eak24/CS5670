@@ -85,14 +85,12 @@ def two_layer_net(X, model, y=None, reg=0.0):
   # shape (N, C).                                                             #
   #############################################################################
   # TODO-BLOCK-BEGIN
-  import inspect
-  fl = X.dot(W1)# apply weights , (D,H)
-  fl += b1 #add bias
-  sl =np.maximum(fl,0) #ReLU
-  tl = sl.dot(W2) #apply weights, (N,C)
-  tl += b2 
-  fl = np.exp(tl / reg) # softmax, risk of overflow here
-  scores = fl / np.sum(fl)
+  first_l = X.dot(W1)# first layer: apply weights , (D,H)
+  first_l += b1[np.newaxis,:] #add bias to first layer
+  second_l =np.maximum(first_l,0) #second layer: ReLU
+  third_l = second_l.dot(W2) #third layer: apply weights, (N,C)
+  third_l += b2 #add bias to the third layer
+  scores = third_l#-np.log(scores)
   #print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
   # TODO-BLOCK-END
   #############################################################################
@@ -114,9 +112,17 @@ def two_layer_net(X, model, y=None, reg=0.0):
   # So that your results match ours, multiply the regularization loss by 0.5  #
   #############################################################################
   # TODO-BLOCK-BEGIN
-  import inspect
-  frameinfo = inspect.getframeinfo(inspect.currentframe())
-  print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
+  fourh_l = third_l-third_l.max()
+  fourh_l = np.exp(fourh_l) # fourth layer: softmax, risk of overflow here!!!
+  loss = fourh_l / np.sum(fourh_l,axis=1,keepdims=True) 
+  loss = -np.log(loss)
+  indexes  = np.arange(N)*scores.shape[1] + y
+  loss = loss.flatten()[indexes].sum()
+  loss+= .5*((W1**2).sum()+(W2**2).sum()+(b1**2).sum()+(b2**2).sum())
+  loss /= N
+  #output
+
+  #print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
   # TODO-BLOCK-END
   #############################################################################
   #                              END OF YOUR CODE                             #
