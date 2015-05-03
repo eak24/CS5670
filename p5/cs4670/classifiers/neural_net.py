@@ -114,12 +114,12 @@ def two_layer_net(X, model, y=None, reg=0.0):
   # TODO-BLOCK-BEGIN
   fourh_l = third_l-third_l.max()
   fourh_l = np.exp(fourh_l) # fourth layer: softmax. Each row is an example
-  loss = fourh_l / np.sum(fourh_l,axis=1,keepdims=True) 
-  loss = -np.log(loss)
+  L = fourh_l / np.sum(fourh_l,axis=1,keepdims=True) 
+  L = -np.log(L)
   indexes  = np.arange(N)*scores.shape[1] + y #From each row i, take the y[i]th loss
-  loss = loss.flatten()[indexes].sum()
-  loss+= .5*((W1**2).sum()+(W2**2).sum()+(b1**2).sum()+(b2**2).sum())
+  loss = L.flatten()[indexes].sum()
   loss /= N
+  loss+= .5*reg*((W1**2).sum()+(W2**2).sum())
   #output
 
   #print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
@@ -136,6 +136,21 @@ def two_layer_net(X, model, y=None, reg=0.0):
   # grads['W1'] should store the gradient on W1, and be a matrix of same size #
   #############################################################################
   # TODO-BLOCK-BEGIN
+  #Compute dL/dFj,i
+  dLdF = L # = e^{scores_j,i}/Sum[e^{scores_j,i}]
+  dLdF -=1
+  dLdF/=N
+  grads['b2'] = dLdF.sum(axis=1)#dL/db2 = Sum[ dL/dF_{j,i},j]
+
+  #Fij = H(i,:) dot W2(:,j) +B(i)
+  # = H(i,1)*W2(1,j)...H(i,x)*W2(x,j)+... +B(i)
+  # dFij/dWxj = H(i,x)
+  # dL/dWX,Y  = Sum[dL/dF(i,y) dF(i,y)/dW(x,y)] =Sum[dL/dF(i,y) H(i,x)] = dL/dF(:,y) dot H(:,x) 
+  #Compute dL/dW2(x,y)
+  # dL/dWxy
+  grads['W2'] = dLdF.T.dot(second_l)
+  #grads['W2'] += W2 #the gradient due to the regularization
+
   import inspect
   frameinfo = inspect.getframeinfo(inspect.currentframe())
   print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
