@@ -23,9 +23,10 @@ def affine_forward(x, w, b):
   # will need to reshape the input into rows.                                 #
   #############################################################################
   # TODO-BLOCK-BEGIN
-  import inspect
-  frameinfo = inspect.getframeinfo(inspect.currentframe())
-  print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
+  N = x.shape[0]
+  X = x.reshape((N,np.prod(x.shape[1:])))
+  out = X.dot(w) # apply weights , (D,H)
+  out += b[np.newaxis,:] # add bias layer
   # TODO-BLOCK-END
   #############################################################################
   #                             END OF YOUR CODE                              #
