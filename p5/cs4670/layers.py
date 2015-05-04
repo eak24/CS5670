@@ -87,9 +87,7 @@ def relu_forward(x):
   # TODO: Implement the ReLU forward pass.                                    #
   #############################################################################
   # TODO-BLOCK-BEGIN
-  import inspect
-  frameinfo = inspect.getframeinfo(inspect.currentframe())
-  print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
+  out = np.maximum(x,0)
   # TODO-BLOCK-END
   #############################################################################
   #                             END OF YOUR CODE                              #
@@ -114,9 +112,7 @@ def relu_backward(dout, cache):
   # TODO: Implement the ReLU backward pass.                                   #
   #############################################################################
   # TODO-BLOCK-BEGIN
-  import inspect
-  frameinfo = inspect.getframeinfo(inspect.currentframe())
-  print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
+  dx = dout * (x>0)
   # TODO-BLOCK-END
   #############################################################################
   #                             END OF YOUR CODE                              #
