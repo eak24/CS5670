@@ -57,8 +57,13 @@ def affine_backward(dout, cache):
   #############################################################################
   # TODO-BLOCK-BEGIN
   import inspect
-  frameinfo = inspect.getframeinfo(inspect.currentframe())
-  print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
+  N = x.shape[0]
+  X = x.reshape((N,np.prod(x.shape[1:])))
+  db = dout.sum(axis=0)
+
+  dw = dout.T.dot(X).T
+  dx = dout.dot(w.T)
+  dx=dx.reshape(x.shape)
   # TODO-BLOCK-END
   #############################################################################
   #                             END OF YOUR CODE                              #
