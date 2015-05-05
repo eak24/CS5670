@@ -56,7 +56,6 @@ def affine_backward(dout, cache):
   # TODO: Implement the affine backward pass.                                 #
   #############################################################################
   # TODO-BLOCK-BEGIN
-  import inspect
   N = x.shape[0]
   X = x.reshape((N,np.prod(x.shape[1:])))
   db = dout.sum(axis=0)
@@ -152,9 +151,37 @@ def conv_forward_naive(x, w, b, conv_param):
   # Hint: you can use the function np.pad for padding.                        #
   #############################################################################
   # TODO-BLOCK-BEGIN
-  import inspect
-  frameinfo = inspect.getframeinfo(inspect.currentframe())
-  print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
+  # Calculate output array shape
+  N = x.shape[0]
+  C = x.shape[1]
+  H = x.shape[2]
+  W = x.shape[3]
+  HH = w.shape[2]
+  WW = w.shape[3]
+  F = w.shape[0]
+  pad = conv_param['pad']
+  stride = conv_param['stride']
+  H_out = 1 + (H + 2 * pad - HH) / stride
+  W_out = 1 + (W + 2 * pad - WW) / stride
+  # Create the output array
+  out = np.zeros((N,F,H_out,W_out))
+  # Pad the array with zero-padding
+  x_pad = np.zeros((N,C,2*pad+H,2*pad+W))
+  for n in range(N):
+    for c in range(C):
+      x_pad[n,c,:,:] = np.pad(x[n,c,:,:],pad_width=pad,mode='constant')
+  # Populate output array
+  for n in range(N):
+    for i_out in range(0,H_out):
+      for j_out in range(0,W_out):
+        for f in range(0,F):
+          # origin coordinates for the input matrix, x:
+          i_in = pad-1 + i_out * stride
+          j_in = pad-1 + j_out * stride
+          # apply the weights and bias:
+          out[n,f,i_out,j_out] = np.sum(\
+            x_pad[n,:,i_in:i_in+HH,j_in:j_in+WW]\
+            *w[f,:,:,:]) + b[f]
   # TODO-BLOCK-END
   #############################################################################
   #                             END OF YOUR CODE                              #
@@ -213,9 +240,28 @@ def max_pool_forward_naive(x, pool_param):
   # TODO: Implement the max pooling forward pass                              #
   #############################################################################
   # TODO-BLOCK-BEGIN
-  import inspect
-  frameinfo = inspect.getframeinfo(inspect.currentframe())
-  print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
+  # Calculate output array shape
+  N = x.shape[0]
+  C = x.shape[1]
+  H = x.shape[2]
+  W = x.shape[3]
+  HH = pool_param['pool_height']
+  WW = pool_param['pool_width']
+  stride = pool_param['stride']
+  H_out = 1 + (H - HH) / stride
+  W_out = 1 + (W - WW) / stride
+  # Create the output array
+  out = np.zeros((N,C,H_out,W_out))
+  # Populate output array
+  for n in range(N):
+    for i_out in range(0,H_out):
+      for j_out in range(0,W_out):
+        for c in range(0,C):
+          # origin coordinates for the input matrix, x:
+          i_in = i_out * stride
+          j_in = j_out * stride
+          # apply the weights and bias:
+          out[n,c,i_out,j_out] = np.max(x[n,c,i_in:i_in+HH,j_in:j_in+WW])
   # TODO-BLOCK-END
   #############################################################################
   #                             END OF YOUR CODE                              #
@@ -240,9 +286,29 @@ def max_pool_backward_naive(dout, cache):
   # TODO: Implement the max pooling backward pass                             #
   #############################################################################
   # TODO-BLOCK-BEGIN
-  import inspect
-  frameinfo = inspect.getframeinfo(inspect.currentframe())
-  print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
+  x,pool_param = cache
+  N = x.shape[0]
+  C = x.shape[1]
+  H = x.shape[2]
+  W = x.shape[3]
+  HH = pool_param['pool_height']
+  WW = pool_param['pool_width']
+  stride = pool_param['stride']
+  H_out = 1 + (H - HH) / stride
+  W_out = 1 + (W - WW) / stride
+  dx = np.zeros_like(x)
+  for n in range(N):
+    for i_out in range(H_out):
+      for j_out in range(W_out):
+        for c in range(C):
+          # origin coordinates for the input matrix, x:
+          i_in = i_out * stride
+          j_in = j_out * stride
+          max_ind = x[n,c,i_in:i_in+HH,j_in:j_in+WW].argmax()
+          max_i,max_j = np.unravel_index(max_ind,(HH,WW))
+          max_i += i_in
+          max_j += j_in
+          dx[n,c,max_i,max_j] = dout[n,c,i_out,j_out]
   # TODO-BLOCK-END
   #############################################################################
   #                             END OF YOUR CODE                              #
