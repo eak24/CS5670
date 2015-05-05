@@ -56,7 +56,7 @@ def two_layer_convnet(X, model, y=None, reg=0.0):
 
   # Compute the backward pass
   data_loss, dscores = softmax_loss(scores, y)
-
+  #conv-relu-pool-affine-softmax
   # Compute the gradients using a backward pass
   da1, dW2, db2 = affine_backward(dscores, cache2)
   dX,  dW1, db1 = conv_relu_pool_backward(da1, cache1)
@@ -70,6 +70,130 @@ def two_layer_convnet(X, model, y=None, reg=0.0):
   grads = {'W1': dW1, 'b1': db1, 'W2': dW2, 'b2': db2}
 
   return loss, grads
+
+def my_new_convnet(X, model, y=None, reg=0.0):
+     #conv-relu-pool-conv-relu-pool-affine-softmax  
+    # Unpack weights
+    W1, b1, W2,b2, W3,b3 = model['W1'], model['b1'], model['W2'], model['b2'],model['W3'], model['b3']
+    N, C, H, W = X.shape
+
+    # We assume that the convolution is "same", so that the data has the same
+    # height and width after performing the convolution. We can then use the
+    # size of the filter to figure out the padding.
+    conv_filter_height, conv_filter_width = W1.shape[2:]
+    assert conv_filter_height == conv_filter_width, 'Conv filter must be square'
+    assert conv_filter_height % 2 == 1, 'Conv filter height must be odd'
+    assert conv_filter_width % 2 == 1, 'Conv filter width must be odd'
+    conv_param = {'stride': 1, 'pad': (conv_filter_height - 1) / 2}
+    pool_param = {'pool_height': 2, 'pool_width': 2, 'stride': 2}
+    #print 'X.shape' ,X.shape
+
+    # Compute the forward pass
+    #print 'W1.shape ',W1.shape
+    a1, cache1 = conv_relu_pool_forward(X, W1, b1, conv_param, pool_param)
+    #print 'a1.shape', a1.shape
+    #print 'W2.shape', W2.shape
+    a2, cache2 = conv_relu_forward(a1, W2, b2, conv_param, pool_param)
+    #print 'a2.shape', a2.shape
+    #print 'W3.shape', W3.shape
+    scores, cache3 = affine_forward(a2, W3, b3)
+
+    if y is None:
+      return scores
+
+    # Compute the backward pass
+    data_loss, dscores = softmax_loss(scores, y)
+    #conv-relu-pool-affine-softmax
+    # Compute the gradients using a backward pass
+    da2, dW3, db3 = affine_backward(dscores, cache3)
+    da1,  dW2, db2= conv_relu_backward(da2, cache2)
+    dX,  dW1, db1 = conv_relu_pool_backward(da1, cache1)
+
+    # Add regularization
+    dW1 += reg * W1
+    dW2 += reg * W2
+    dW3 += reg * W3
+    reg_loss = 0.5 * reg * sum(np.sum(W * W) for W in [W1, W2,W3])
+
+    loss = data_loss + reg_loss
+    grads = {'W1': dW1, 'b1': db1, 'W2': dW2, 'b2': db2,'W3':dW3, 'b3':db3}
+
+    return loss, grads
+
+def my_convnet(X, model, y=None, reg=0.0):
+    #conv-relu-pool-conv-relu-pool-affine-softmax  
+    # Unpack weights
+    W1, b1, W2,b2, W3,b3 = model['W1'], model['b1'], model['W2'], model['b2'],model['W3'], model['b3']
+    N, C, H, W = X.shape
+
+    # We assume that the convolution is "same", so that the data has the same
+    # height and width after performing the convolution. We can then use the
+    # size of the filter to figure out the padding.
+    conv_filter_height, conv_filter_width = W1.shape[2:]
+    assert conv_filter_height == conv_filter_width, 'Conv filter must be square'
+    assert conv_filter_height % 2 == 1, 'Conv filter height must be odd'
+    assert conv_filter_width % 2 == 1, 'Conv filter width must be odd'
+    conv_param = {'stride': 1, 'pad': (conv_filter_height - 1) / 2}
+    pool_param = {'pool_height': 2, 'pool_width': 2, 'stride': 2}
+    #print 'X.shape' ,X.shape
+
+    # Compute the forward pass
+    #print 'W1.shape ',W1.shape
+    a1, cache1 = conv_relu_pool_forward(X, W1, b1, conv_param, pool_param)
+    #print 'a1.shape', a1.shape
+    #print 'W2.shape', W2.shape
+    a2, cache2 = conv_relu_pool_forward(a1, W2, b2, conv_param, pool_param)
+    #print 'a2.shape', a2.shape
+    #print 'W3.shape', W3.shape
+    scores, cache3 = affine_forward(a2, W3, b3)
+
+    if y is None:
+      return scores
+
+    # Compute the backward pass
+    data_loss, dscores = softmax_loss(scores, y)
+    #conv-relu-pool-affine-softmax
+    # Compute the gradients using a backward pass
+    da2, dW3, db3 = affine_backward(dscores, cache3)
+    da1,  dW2, db2= conv_relu_pool_backward(da2, cache2)
+    dX,  dW1, db1 = conv_relu_pool_backward(da1, cache1)
+
+    # Add regularization
+    dW1 += reg * W1
+    dW2 += reg * W2
+    dW3 += reg * W3
+    reg_loss = 0.5 * reg * sum(np.sum(W * W) for W in [W1, W2,W3])
+
+    loss = data_loss + reg_loss
+    grads = {'W1': dW1, 'b1': db1, 'W2': dW2, 'b2': db2,'W3':dW3, 'b3':db3}
+
+    return loss, grads
+
+def init_my_convnet(weight_scale=1e-3, bias_scale=0, input_shape=(3, 32, 32),
+                           num_classes=10, num_filters=32, filter_size=5):
+  C, H, W = input_shape
+  assert filter_size % 2 == 1, 'Filter size must be odd; got %d' % filter_size
+  model = {}
+  model['W1'] = weight_scale * np.random.randn(num_filters, C, filter_size, filter_size)
+  model['b1'] = bias_scale * np.random.randn(num_filters)
+  model['W2'] = weight_scale * np.random.randn(num_filters, num_filters, filter_size, filter_size)
+  model['b2'] = bias_scale * np.random.randn(num_filters)
+  model['W3'] = weight_scale * np.random.randn(num_filters * H * W / 16, num_classes)
+  model['b3'] = bias_scale * np.random.randn(num_classes)
+  return model
+def init_my_new_convnet(weight_scale=1e-3, bias_scale=0, input_shape=(3, 32, 32),
+                           num_classes=10, num_filters=32, filter_size=5):
+  C, H, W = input_shape
+  assert filter_size % 2 == 1, 'Filter size must be odd; got %d' % filter_size
+  model = {}
+  model['W1'] = weight_scale * np.random.randn(num_filters, C, filter_size, filter_size)
+  model['b1'] = bias_scale * np.random.randn(num_filters)
+  model['W2'] = weight_scale * np.random.randn(num_filters, num_filters, filter_size, filter_size)
+  model['b2'] = bias_scale * np.random.randn(num_filters)
+  model['W3'] = weight_scale * np.random.randn(num_filters * H * W / 4, num_classes)
+  model['b3'] = bias_scale * np.random.randn(num_classes)
+  return model
+
 
 
 def init_two_layer_convnet(weight_scale=1e-3, bias_scale=0, input_shape=(3, 32, 32),
