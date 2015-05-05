@@ -93,7 +93,7 @@ def my_new_convnet(X, model, y=None, reg=0.0):
     a1, cache1 = conv_relu_pool_forward(X, W1, b1, conv_param, pool_param)
     #print 'a1.shape', a1.shape
     #print 'W2.shape', W2.shape
-    a2, cache2 = conv_relu_forward(a1, W2, b2, conv_param, pool_param)
+    a2, cache2 = conv_relu_forward(a1, W2, b2, conv_param)
     #print 'a2.shape', a2.shape
     #print 'W3.shape', W3.shape
     scores, cache3 = affine_forward(a2, W3, b3)
@@ -181,6 +181,7 @@ def init_my_convnet(weight_scale=1e-3, bias_scale=0, input_shape=(3, 32, 32),
   model['W3'] = weight_scale * np.random.randn(num_filters * H * W / 16, num_classes)
   model['b3'] = bias_scale * np.random.randn(num_classes)
   return model
+
 def init_my_new_convnet(weight_scale=1e-3, bias_scale=0, input_shape=(3, 32, 32),
                            num_classes=10, num_filters=32, filter_size=5):
   C, H, W = input_shape

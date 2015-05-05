@@ -92,7 +92,7 @@ class ClassifierTrainer(object):
         elif update == 'momentum':
           if not p in self.step_cache:
             self.step_cache[p] = np.zeros(grads[p].shape)
-          dx = np.zeros_like(grads[p]) # you can remove this after
+          #dx = np.zeros_like(grads[p]) # you can remove this after
           #####################################################################
           # TODO: implement the momentum update formula and store the step    #
           # update into variable dx. You should use the variable              #
@@ -100,9 +100,8 @@ class ClassifierTrainer(object):
           # Don't forget to also update the step_cache[p].                    #
           #####################################################################
           # TODO-BLOCK-BEGIN
-          import inspect
-          frameinfo = inspect.getframeinfo(inspect.currentframe())
-          print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
+          dx = momentum * self.step_cache[p] - learning_rate*grads[p]
+          self.step_cache[p] = dx
           # TODO-BLOCK-END
           #####################################################################
           #                      END OF YOUR CODE                             #
@@ -110,16 +109,16 @@ class ClassifierTrainer(object):
         elif update == 'rmsprop':
           if not p in self.step_cache:
             self.step_cache[p] = np.zeros(grads[p].shape)
-          dx = np.zeros_like(grads[p]) # you can remove this after
           ######################################################################
           # TODO: implement the RMSProp update and store the parameter update  #
           # dx. Don't forget to also update step_cache[p]. Use smoothing 1e-8. #
           # Use the decay_rate variable as your decay rate                     #
           ######################################################################
           # TODO-BLOCK-BEGIN
-          import inspect
-          frameinfo = inspect.getframeinfo(inspect.currentframe())
-          print "TODO: {}: line {}".format(frameinfo.filename, frameinfo.lineno)
+          self.step_cache[p]= decay_rate*self.step_cache[p]
+          self.step_cache[p]+=(1-decay_rate)*(grads[p]**2)
+          dx = -learning_rate * grads[p]/np.sqrt(self.step_cache[p]+1e-8) # you can remove this after
+
           # TODO-BLOCK-END
           #####################################################################
           #                      END OF YOUR CODE                             #
